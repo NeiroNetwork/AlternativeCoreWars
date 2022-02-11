@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NeiroNetwork\PluginTemplate;
+namespace NeiroNetwork\AlternativeCoreWars;
 
 use pocketmine\plugin\PluginBase;
 
