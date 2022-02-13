@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NeiroNetwork\AlternativeCoreWars;
 
+use NeiroNetwork\AlternativeCoreWars\core\Game;
 use NeiroNetwork\AlternativeCoreWars\core\InLobby;
 use NeiroNetwork\AlternativeCoreWars\utils\Broadcast;
 use NeiroNetwork\TranslationLibrary\Translator;
@@ -29,6 +30,7 @@ class Main extends PluginBase{
 
 		$this->plugins = [
 			new InLobby(...$parameters),
+			new Game(...$parameters),
 		];
 	}
 

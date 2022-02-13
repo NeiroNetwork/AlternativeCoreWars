@@ -10,9 +10,15 @@ use pocketmine\event\Listener;
 
 class Game extends SubPluginBase implements Listener{
 
-	private static int $status = GameStatus::WAITING;
+	private static self $instance;
 
 	public static function getStatus() : int{
-		return self::$status;
+		return self::$instance->status;
+	}
+
+	private int $status = GameStatus::WAITING;
+
+	protected function onEnable() : void{
+		self::$instance = $this;
 	}
 }
