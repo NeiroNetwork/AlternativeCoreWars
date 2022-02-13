@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace NeiroNetwork\AlternativeCoreWars;
 
 use NeiroNetwork\AlternativeCoreWars\core\InLobby;
-use NeiroNetwork\AlternativeCoreWars\utils\GlobalVariables;
+use NeiroNetwork\AlternativeCoreWars\utils\Broadcast;
 use NeiroNetwork\TranslationLibrary\Translator;
 use pocketmine\plugin\DiskResourceProvider;
 use pocketmine\plugin\PluginBase;
@@ -16,7 +16,7 @@ class Main extends PluginBase{
 	private array $plugins;
 
 	protected function onLoad() : void{
-		GlobalVariables::setTranslator(new Translator($this, "ja_jp"));
+		Broadcast::setTranslator(new Translator($this, "ja_jp"));
 
 		$parameters = [
 			$this->getPluginLoader(),

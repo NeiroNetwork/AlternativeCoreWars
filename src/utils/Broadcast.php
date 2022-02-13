@@ -4,11 +4,18 @@ declare(strict_types=1);
 
 namespace NeiroNetwork\AlternativeCoreWars\utils;
 
+use NeiroNetwork\TranslationLibrary\Translator;
 use pocketmine\lang\Translatable;
 use pocketmine\player\Player;
 use pocketmine\Server;
 
 final class Broadcast{
+
+	private static Translator $translator;
+
+	public static function setTranslator(Translator $translator) : void{
+		self::$translator = $translator;
+	}
 
 	/**
 	 * @param Player[]|string|null $recipients
@@ -20,7 +27,7 @@ final class Broadcast{
 		}
 		foreach($recipients as $recipient){
 			if(!is_string($message)){
-				$message = GlobalVariables::getTranslator()->translate($message, $recipient);
+				$message = self::$translator->translate($message, $recipient);
 			}
 			$recipient->sendMessage($message);
 		}
@@ -37,7 +44,7 @@ final class Broadcast{
 		}
 		foreach($recipients as $recipient){
 			if(!is_string($tip)){
-				$tip = GlobalVariables::getTranslator()->translate($tip, $recipient);
+				$tip = self::$translator->translate($tip, $recipient);
 			}
 			$recipient->sendTip($tip);
 		}
@@ -54,7 +61,7 @@ final class Broadcast{
 		}
 		foreach($recipients as $recipient){
 			if(!is_string($popup)){
-				$popup = GlobalVariables::getTranslator()->translate($popup, $recipient);
+				$popup = self::$translator->translate($popup, $recipient);
 			}
 			$recipient->sendPopup($popup);
 		}
@@ -71,10 +78,10 @@ final class Broadcast{
 		}
 		foreach($recipients as $recipient){
 			if(!is_string($title)){
-				$title = GlobalVariables::getTranslator()->translate($title, $recipient);
+				$title = self::$translator->translate($title, $recipient);
 			}
 			if(!is_string($subtitle)){
-				$subtitle = GlobalVariables::getTranslator()->translate($subtitle, $recipient);
+				$subtitle = self::$translator->translate($subtitle, $recipient);
 			}
 			$recipient->sendTitle($title, $subtitle, $fadeIn, $stay, $fadeOut);
 		}
@@ -91,7 +98,7 @@ final class Broadcast{
 		}
 		foreach($recipients as $recipient){
 			if(!is_string($popup)){
-				$popup = GlobalVariables::getTranslator()->translate($popup, $recipient);
+				$popup = self::$translator->translate($popup, $recipient);
 			}
 			$recipient->sendJukeboxPopup($popup, []);
 		}
@@ -108,7 +115,7 @@ final class Broadcast{
 		}
 		foreach($recipients as $recipient){
 			if(!is_string($message)){
-				$message = GlobalVariables::getTranslator()->translate($message, $recipient);
+				$message = self::$translator->translate($message, $recipient);
 			}
 			$recipient->sendActionBarMessage($message);
 		}
