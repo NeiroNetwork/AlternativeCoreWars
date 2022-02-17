@@ -15,11 +15,11 @@ use pocketmine\Server;
 class TeamReferee extends SubPluginBase implements Listener{
 
 	/** @var Player[][] */
-	private static array $teams;
+	private static array $teams = [Teams::RED => [], Teams::BLUE => []];
 	/** @var string[] */
-	private static array $indexes;
+	private static array $indexes = [];
 	/** @var string[] */
-	private static array $histories;
+	private static array $histories = [];
 
 	public static function reset() : void{
 		foreach(self::$teams as $players){
@@ -28,10 +28,7 @@ class TeamReferee extends SubPluginBase implements Listener{
 			}
 		}
 
-		self::$teams = [
-			Teams::RED => [],
-			Teams::BLUE => [],
-		];
+		self::$teams = [Teams::RED => [], Teams::BLUE => [],];
 		self::$indexes = [];
 		self::$histories = [];
 	}
