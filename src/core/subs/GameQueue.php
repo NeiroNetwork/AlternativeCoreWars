@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NeiroNetwork\AlternativeCoreWars\core\subs;
 
+use NeiroNetwork\AlternativeCoreWars\utils\ArrayUtils;
 use pocketmine\player\Player;
 
 class GameQueue implements \Iterator, \ArrayAccess, \Countable{
@@ -20,7 +21,7 @@ class GameQueue implements \Iterator, \ArrayAccess, \Countable{
 	}
 
 	public function shuffle() : void{
-		shuffle($this->players);
+		ArrayUtils::shuffleAssoc($this->players);
 	}
 
 	public function reset() : void{
@@ -33,7 +34,7 @@ class GameQueue implements \Iterator, \ArrayAccess, \Countable{
 		return current($this->players);
 	}
 
-	public function next() : Player{
+	public function next() : Player|bool{
 		return next($this->players);
 	}
 

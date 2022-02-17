@@ -73,6 +73,7 @@ class Game extends SubPluginBase implements Listener{
 	protected function onEnable() : void{
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 		$this->getScheduler()->scheduleRepeatingTask(new CallbackTask(function() : void{
+			// TODO: ゲームを実装する (ここに…？)
 			if(self::$status === GameStatus::IN_GAME){
 				self::postGame();
 			}

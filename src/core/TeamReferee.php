@@ -7,6 +7,7 @@ namespace NeiroNetwork\AlternativeCoreWars\core;
 use NeiroNetwork\AlternativeCoreWars\constants\BroadcastChannels;
 use NeiroNetwork\AlternativeCoreWars\constants\Teams;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
+use NeiroNetwork\AlternativeCoreWars\utils\ArrayUtils;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\player\Player;
@@ -58,7 +59,7 @@ class TeamReferee extends SubPluginBase implements Listener{
 			}
 		}
 
-		shuffle($count);
+		ArrayUtils::shuffleAssoc($count);
 		asort($count);
 
 		self::joinTo($player, array_key_first($count));
@@ -80,9 +81,9 @@ class TeamReferee extends SubPluginBase implements Listener{
 	protected static function leave(Player $player) : void{
 		if(null !== $team = self::getTeam($player)){
 			Server::getInstance()->unsubscribeFromBroadcastChannel(BroadcastChannels::fromTeam($team), $player);
+			unset(self::$teams[$team][$player->getId()]);
+			unset(self::$indexes[$player->getId()]);
 		}
-		unset(self::$teams[self::$indexes[$player->getId()]][$player->getId()]);
-		unset(self::$indexes[$player->getId()]);
 	}
 
 	protected function onLoad() : void{
