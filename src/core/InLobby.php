@@ -7,6 +7,8 @@ namespace NeiroNetwork\AlternativeCoreWars\core;
 use NeiroNetwork\AlternativeCoreWars\constants\GameStatus;
 use NeiroNetwork\AlternativeCoreWars\constants\Items;
 use NeiroNetwork\AlternativeCoreWars\constants\Translations;
+use NeiroNetwork\AlternativeCoreWars\core\subs\Arena;
+use NeiroNetwork\AlternativeCoreWars\core\subs\GameQueue;
 use NeiroNetwork\AlternativeCoreWars\scheduler\CallbackTask;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use NeiroNetwork\AlternativeCoreWars\utils\Broadcast;
@@ -15,7 +17,6 @@ use pocketmine\event\player\PlayerItemUseEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\VanillaItems;
-use pocketmine\player\Player;
 
 class InLobby extends SubPluginBase implements Listener{
 
@@ -23,23 +24,27 @@ class InLobby extends SubPluginBase implements Listener{
 	private const MIN_PLAYER = 1;	//10
 
 	private int $voteTime = self::VOTE_TIME;
-	/** @var Player[] */
-	private array $queuedPlayers = [];
+	private GameQueue $queue;
+
+	protected function onLoad() : void{
+		$this->queue = new GameQueue();
+	}
 
 	protected function onEnable() : void{
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 		$this->getScheduler()->scheduleRepeatingTask(new CallbackTask(function(){
 			if(Game::getStatus() !== GameStatus::WAITING) return;
 			$players = $this->getServer()->getWorldManager()->getDefaultWorld()->getPlayers();
-			if(count($this->queuedPlayers) < self::MIN_PLAYER){
+			if(count($this->queue) < self::MIN_PLAYER){
 				$this->voteTime = self::VOTE_TIME;
 				Broadcast::tip(Translations::WAITING_FOR_PLAYERS(), $players);
 			}else{
 				Broadcast::tip(Translations::GAME_STARTS_IN($this->voteTime--), $players);
 			}
 			if($this->voteTime === -1){
-				$this->queuedPlayers = [];
-				// TODO: promote the game status to next
+				// TODO: 動的なアリーナ選択
+				Game::preGame($this->queue, new Arena("arena"));
+				$this->queue->reset();
 			}
 		}), 20);
 	}
@@ -54,7 +59,7 @@ class InLobby extends SubPluginBase implements Listener{
 	}
 
 	public function onQuit(PlayerQuitEvent $event) : void{
-		unset($this->queuedPlayers[$event->getPlayer()->getId()]);
+		$this->queue->remove($event->getPlayer());
 	}
 
 	public function onItemUse(PlayerItemUseEvent $event) : void{
@@ -64,8 +69,8 @@ class InLobby extends SubPluginBase implements Listener{
 		$item = $event->getItem();
 		if($item->equals(Items::QUEUE_COMPASS())){
 			match(Game::getStatus()){
-				GameStatus::WAITING => $this->queuedPlayers[$player->getId()] = $player,
-				GameStatus::IN_GAME => "join the game directly",	//TODO
+				GameStatus::WAITING => $this->queue->add($player),
+				GameStatus::IN_GAME => Game::directJoin($player),
 				default => null,
 			};
 		}

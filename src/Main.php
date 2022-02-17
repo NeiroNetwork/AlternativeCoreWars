@@ -6,6 +6,7 @@ namespace NeiroNetwork\AlternativeCoreWars;
 
 use NeiroNetwork\AlternativeCoreWars\core\Game;
 use NeiroNetwork\AlternativeCoreWars\core\InLobby;
+use NeiroNetwork\AlternativeCoreWars\core\TeamReferee;
 use NeiroNetwork\AlternativeCoreWars\utils\Broadcast;
 use NeiroNetwork\TranslationLibrary\Translator;
 use pocketmine\plugin\DiskResourceProvider;
@@ -31,6 +32,7 @@ class Main extends PluginBase{
 		$this->plugins = [
 			new InLobby(...$parameters),
 			new Game(...$parameters),
+			new TeamReferee(...$parameters),
 		];
 	}
 
