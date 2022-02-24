@@ -12,14 +12,19 @@ use Webmozart\PathUtil\Path;
 class Arena{
 
 	public static function getArenaList() : array{
+		/** @var string[] $result */
 		$result = [];
 
 		/** @var \SplFileInfo $info */
 		foreach(new \FilesystemIterator(Path::join(Server::getInstance()->getDataPath(), "worlds")) as $info){
-			try{
-				$result[] = new self($info->getBasename());
-			}catch(\InvalidArgumentException){}
+			$path = Path::join($info->getPathname(), "corepvp.json");
+			if(file_exists($path) && is_array($data = @json_decode(file_get_contents($path), true))){
+				if(isset($data["name"])){
+					$result[$info->getBasename()] = $data["name"];
+				}
+			}
 		}
+
 		return $result;
 	}
 
@@ -27,7 +32,7 @@ class Arena{
 
 	private string $originalPath;
 	private string $temporaryPath;
-	private ?World $world = null;
+	private World $world;
 
 	private array $arenaData;
 
