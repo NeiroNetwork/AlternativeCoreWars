@@ -8,6 +8,9 @@ use pocketmine\player\Player;
 
 final class PlayerUtils{
 
+	/**
+	 * エンダーチェストを除くプレイヤーの全てのインベントリをクリアします
+	 */
 	public static function clearAllInventories(Player $player) : void{
 		$player->removeCurrentWindow();
 		$player->getInventory()->clearAll();
