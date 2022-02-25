@@ -3,4 +3,4 @@ version: 0.0.1
 main: NeiroNetwork\AlternativeCoreWars\Main
 api: 4.0.0
 src-namespace-prefix: NeiroNetwork\AlternativeCoreWars
-depend: [TranslationLibrary]
+depend: [TranslationLibrary, VoidGenerator]

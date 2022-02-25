@@ -12,16 +12,33 @@ use NeiroNetwork\AlternativeCoreWars\core\subs\GameQueue;
 use NeiroNetwork\AlternativeCoreWars\scheduler\CallbackTask;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use NeiroNetwork\AlternativeCoreWars\utils\Broadcast;
+use NeiroNetwork\AlternativeCoreWars\utils\PlayerUtils;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerItemUseEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\VanillaItems;
+use pocketmine\player\GameMode;
+use pocketmine\player\Player;
 
 class InLobby extends SubPluginBase implements Listener{
 
 	private const VOTE_TIME = 10;	//120
 	private const MIN_PLAYER = 1;	//10
+
+	public static function teleportToLobby(Player $player) : void{
+		PlayerUtils::clearAllInventories($player);
+
+		$player->setGamemode(GameMode::ADVENTURE());
+
+		$position = $player->getServer()->getWorldManager()->getDefaultWorld()->getSpawnLocation();
+		$player->teleport($position, 0, 0);
+
+		$player->getInventory()->addItem(
+			VanillaItems::COMPASS()->setCustomName("§bゲームに参加する"),
+			//TODO: VanillaItems::PAPER()->setCustomName("マップ投票")
+		);
+	}
 
 	private int $voteTime = self::VOTE_TIME;
 	private GameQueue $queue;
@@ -42,8 +59,7 @@ class InLobby extends SubPluginBase implements Listener{
 				Broadcast::tip(Translations::GAME_STARTS_IN($this->voteTime--), $players);
 			}
 			if($this->voteTime === -1){
-				// TODO: 動的なアリーナ選択
-				Game::preGame($this->queue, new Arena("arena"));
+				Game::preGame($this->queue, new Arena(array_rand(Arena::getArenaList())));
 				$this->queue->reset();
 			}
 		}), 20);
@@ -51,10 +67,7 @@ class InLobby extends SubPluginBase implements Listener{
 
 	public function onJoin(PlayerJoinEvent $event) : void{
 		$player = $event->getPlayer();
-		$player->getInventory()->addItem(
-			VanillaItems::COMPASS()->setCustomName("§bゲームに参加する"),
-			//TODO: VanillaItems::PAPER()->setCustomName("マップ投票")
-		);
+		self::teleportToLobby($player);
 		$this->getScheduler()->scheduleDelayedTask(new CallbackTask(fn() => $player->sendMessage("音色サーバーへようこそ")), 20);
 	}
 

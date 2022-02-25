@@ -32,13 +32,12 @@ class Arena{
 
 	private string $originalPath;
 	private string $temporaryPath;
-	private World $world;
 
-	private array $arenaData;
+	private World $world;
+	private ArenaData $arenaData;
 
 	public function __construct(string $worldFolderName){
 		$this->server = Server::getInstance();
-
 		$this->originalPath = Path::join($this->server->getDataPath(), "worlds", $worldFolderName);
 
 		if(!is_dir($this->originalPath) || !file_exists(Path::join($this->originalPath, "level.dat"))){
@@ -48,21 +47,21 @@ class Arena{
 			throw new \InvalidArgumentException("Configuration file was not found in \"$worldFolderName\"");
 		}
 
-		// TODO: できればarrayじゃなくてクラス作ってバリデーションしたい
-		$this->arenaData = json_decode(file_get_contents($json), true);
+		$this->loadWorld();
+
+		$this->arenaData = new ArenaData(json_decode(file_get_contents($json), true), $this->world);
 	}
 
-	public function loadWorld() : void{
-		if($this->world !== null){
-			throw new \RuntimeException("World has already been loaded");
-		}
+	public function __destruct(){
+		$this->unloadWorld();
+	}
 
+	private function loadWorld() : void{
 		if(!file_exists($dir = Path::join($this->server->getDataPath(), "temporary_worlds"))){
 			mkdir($dir);
 		}
 
-		$name = bin2hex(random_bytes(8));
-		$this->temporaryPath = Path::join($dir, $name);
+		$this->temporaryPath = Path::join($dir, $name = uniqid(more_entropy: true));
 
 		Filesystem::recursiveCopy($this->originalPath, $this->temporaryPath);
 
@@ -70,18 +69,18 @@ class Arena{
 		$this->world = $this->server->getWorldManager()->getWorldByName("../temporary_worlds/$name");
 	}
 
-	public function unloadWorld() : void{
-		if($this->world === null){
-			throw new \RuntimeException("World is not loaded");
-		}
-
+	private function unloadWorld() : void{
 		$this->server->getWorldManager()->unloadWorld($this->world);
-		$this->world = null;
+		unset($this->world);
 
 		Filesystem::recursiveUnlink($this->temporaryPath);
 	}
 
-	public function getData() : array{
+	public function getWorld() : World{
+		return $this->world;
+	}
+
+	public function getData() : ArenaData{
 		return $this->arenaData;
 	}
 }
