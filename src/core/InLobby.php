@@ -13,13 +13,16 @@ use NeiroNetwork\AlternativeCoreWars\scheduler\CallbackTask;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use NeiroNetwork\AlternativeCoreWars\utils\Broadcast;
 use NeiroNetwork\AlternativeCoreWars\utils\PlayerUtils;
+use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerItemUseEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\VanillaItems;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
+use pocketmine\world\Position;
 
 class InLobby extends SubPluginBase implements Listener{
 
@@ -32,7 +35,7 @@ class InLobby extends SubPluginBase implements Listener{
 		$player->setGamemode(GameMode::ADVENTURE());
 
 		$position = $player->getServer()->getWorldManager()->getDefaultWorld()->getSpawnLocation();
-		$player->teleport($position, 0, 0);
+		$player->teleport(Position::fromObject($position->add(0.5, 0, 0.5), $position->getWorld()), 0, 0);
 
 		$player->getInventory()->addItem(
 			VanillaItems::COMPASS()->setCustomName("§bゲームに参加する"),
@@ -66,9 +69,7 @@ class InLobby extends SubPluginBase implements Listener{
 	}
 
 	public function onJoin(PlayerJoinEvent $event) : void{
-		$player = $event->getPlayer();
-		self::teleportToLobby($player);
-		$this->getScheduler()->scheduleDelayedTask(new CallbackTask(fn() => $player->sendMessage("音色サーバーへようこそ")), 20);
+		self::teleportToLobby($event->getPlayer());
 	}
 
 	public function onQuit(PlayerQuitEvent $event) : void{
@@ -86,6 +87,26 @@ class InLobby extends SubPluginBase implements Listener{
 				GameStatus::IN_GAME => Game::directJoin($player),
 				default => null,
 			};
+		}
+	}
+
+	public function onDamage(EntityDamageEvent $event) : void{
+		if(!($player = $event->getEntity()) instanceof Player){
+			return;
+		}
+
+		if($player->getWorld() === $this->getServer()->getWorldManager()->getDefaultWorld()){
+			$event->cancel();
+			if($event->getCause() === EntityDamageEvent::CAUSE_VOID){
+				self::teleportToLobby($player);
+			}
+		}
+	}
+
+	public function onExhaust(PlayerExhaustEvent $event) : void{
+		$player = $event->getPlayer();
+		if($player->getWorld() === $this->getServer()->getWorldManager()->getDefaultWorld()){
+			$event->cancel();
 		}
 	}
 }

@@ -70,7 +70,10 @@ class Arena{
 	}
 
 	private function unloadWorld() : void{
-		$this->server->getWorldManager()->unloadWorld($this->world);
+		if($this->world->isLoaded()){
+			$this->server->getWorldManager()->unloadWorld($this->world);
+		}
+
 		unset($this->world);
 
 		Filesystem::recursiveUnlink($this->temporaryPath);

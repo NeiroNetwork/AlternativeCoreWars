@@ -6,6 +6,7 @@ namespace NeiroNetwork\AlternativeCoreWars;
 
 use NeiroNetwork\AlternativeCoreWars\core\Game;
 use NeiroNetwork\AlternativeCoreWars\core\InLobby;
+use NeiroNetwork\AlternativeCoreWars\core\ServerFeatureNormalizer;
 use NeiroNetwork\AlternativeCoreWars\core\TeamReferee;
 use NeiroNetwork\AlternativeCoreWars\utils\Broadcast;
 use NeiroNetwork\TranslationLibrary\Translator;
@@ -33,6 +34,7 @@ class Main extends PluginBase{
 			new InLobby(...$parameters),
 			new Game(...$parameters),
 			new TeamReferee(...$parameters),
+			new ServerFeatureNormalizer(...$parameters),
 		];
 	}
 
