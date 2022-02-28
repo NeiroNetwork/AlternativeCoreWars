@@ -67,6 +67,8 @@ class Arena{
 
 		$this->server->getWorldManager()->loadWorld("../temporary_worlds/$name");
 		$this->world = $this->server->getWorldManager()->getWorldByName("../temporary_worlds/$name");
+
+		$this->world->setAutoSave(true);
 	}
 
 	private function unloadWorld() : void{
