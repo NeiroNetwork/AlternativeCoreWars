@@ -20,7 +20,9 @@ class ArenaData{
 	/** @var Position[] */
 	private array $nexuses;
 	/** @var AxisAlignedBB[] */
-	private array $protections;
+	private array $lenientProtections;
+	/** @var AxisAlignedBB[] */
+	private array $strictProtections;
 
 	public function __construct(array $data, World $world){
 		$this->name = (string) $data["name"];
@@ -47,7 +49,7 @@ class ArenaData{
 			$this->nexuses[$team] = Position::fromObject((new Vector3(...$nexus))->floor(), $world);
 		}
 
-		$this->protections = array_map(function(array $protection) : AxisAlignedBB{
+		$aabbFunction = function(array $protection) : AxisAlignedBB{
 			$protection["minY"] ??= World::Y_MIN;
 			$protection["maxY"] ??= World::Y_MAX;
 			foreach(["X", "Y", "Z"] as $axis){
@@ -58,7 +60,10 @@ class ArenaData{
 				}
 			}
 			return new AxisAlignedBB(...$protection);
-		}, $data["protections"] ?? []);
+		};
+
+		$this->lenientProtections = array_map($aabbFunction, $data["lenient_protections"] ?? []);
+		$this->strictProtections = array_map($aabbFunction, $data["strict_protections"] ?? []);
 	}
 
 	public function getName() : string{
@@ -77,7 +82,11 @@ class ArenaData{
 		return $this->nexuses;
 	}
 
-	public function getProtections() : array{
-		return $this->protections;
+	public function getLenientProtections() : array{
+		return $this->lenientProtections;
+	}
+
+	public function getStrictProtections() : array{
+		return $this->strictProtections;
 	}
 }

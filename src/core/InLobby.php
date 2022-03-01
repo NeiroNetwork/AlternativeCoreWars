@@ -13,6 +13,7 @@ use NeiroNetwork\AlternativeCoreWars\scheduler\CallbackTask;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use NeiroNetwork\AlternativeCoreWars\utils\Broadcast;
 use NeiroNetwork\AlternativeCoreWars\utils\PlayerUtils;
+use pocketmine\entity\Human;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerExhaustEvent;
@@ -20,7 +21,6 @@ use pocketmine\event\player\PlayerItemUseEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\VanillaItems;
-use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
 
@@ -30,9 +30,7 @@ class InLobby extends SubPluginBase implements Listener{
 	private const MIN_PLAYER = 1;	//10
 
 	public static function teleportToLobby(Player $player) : void{
-		PlayerUtils::clearAllInventories($player);
-
-		$player->setGamemode(GameMode::ADVENTURE());
+		PlayerUtils::resetKnownAllStates($player);
 
 		$position = $player->getServer()->getWorldManager()->getDefaultWorld()->getSpawnLocation();
 		$player->teleport(Position::fromObject($position->add(0.5, 0, 0.5), $position->getWorld()), 0, 0);
@@ -77,8 +75,7 @@ class InLobby extends SubPluginBase implements Listener{
 	}
 
 	public function onItemUse(PlayerItemUseEvent $event) : void{
-		$player = $event->getPlayer();
-		if($this->getServer()->getWorldManager()->getDefaultWorld() !== $player->getWorld()) return;
+		if(!$this->inLobby($player = $event->getPlayer())) return;
 
 		$item = $event->getItem();
 		if($item->equals(Items::QUEUE_COMPASS())){
@@ -91,11 +88,7 @@ class InLobby extends SubPluginBase implements Listener{
 	}
 
 	public function onDamage(EntityDamageEvent $event) : void{
-		if(!($player = $event->getEntity()) instanceof Player){
-			return;
-		}
-
-		if($player->getWorld() === $this->getServer()->getWorldManager()->getDefaultWorld()){
+		if(($player = $event->getEntity()) instanceof Player && $this->inLobby($player)){
 			$event->cancel();
 			if($event->getCause() === EntityDamageEvent::CAUSE_VOID){
 				self::teleportToLobby($player);
@@ -104,9 +97,12 @@ class InLobby extends SubPluginBase implements Listener{
 	}
 
 	public function onExhaust(PlayerExhaustEvent $event) : void{
-		$player = $event->getPlayer();
-		if($player->getWorld() === $this->getServer()->getWorldManager()->getDefaultWorld()){
+		if($this->inLobby($event->getPlayer())){
 			$event->cancel();
 		}
+	}
+
+	public function inLobby(Human $player) : bool{
+		return $player->getWorld() === $this->getServer()->getWorldManager()->getDefaultWorld();
 	}
 }

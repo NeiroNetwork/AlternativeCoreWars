@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace NeiroNetwork\AlternativeCoreWars\core;
 
-use Grpc\Call;
 use NeiroNetwork\AlternativeCoreWars\constants\GameStatus;
 use NeiroNetwork\AlternativeCoreWars\constants\Teams;
 use NeiroNetwork\AlternativeCoreWars\constants\Translations;
@@ -16,6 +15,7 @@ use NeiroNetwork\AlternativeCoreWars\utils\Broadcast;
 use NeiroNetwork\AlternativeCoreWars\utils\PlayerUtils;
 use pocketmine\event\Listener;
 use pocketmine\item\Armor;
+use pocketmine\item\VanillaItems;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 
@@ -41,15 +41,17 @@ class Game extends SubPluginBase implements Listener{
 	}
 
 	public static function directJoin(Player $player) : void{
+		PlayerUtils::resetKnownAllStates($player);
+
 		TeamReferee::randomJoin($player);
 		$team = TeamReferee::getTeam($player);
 		Broadcast::message(Translations::JOINED_TEAM($team), [$player]);
 
-		PlayerUtils::clearAllInventories($player);
-
 		$player->teleport(reset(self::$arena->getData()->getSpawns()[$team]));
 
 		// TODO: give items (Kits との連携)
+		$player->getArmorInventory()->setChestplate(VanillaItems::LEATHER_TUNIC());
+		$player->getInventory()->setItem(0, VanillaItems::WOODEN_HOE());
 
 		foreach($player->getArmorInventory()->getContents() as $index => $armor){
 			if($armor instanceof Armor){
