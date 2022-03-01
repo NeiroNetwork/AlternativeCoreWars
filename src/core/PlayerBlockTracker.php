@@ -54,10 +54,16 @@ class PlayerBlockTracker extends SubPluginBase implements Listener{
 		unset(self::$blocks[$event->getWorld()->getId()]);
 	}
 
+	/**
+	 * @priority MONITOR
+	 */
 	public function onBlockPlace(BlockPlaceEvent $event) : void{
 		self::add($event->getBlock()->getPosition());
 	}
 
+	/**
+	 * @priority MONITOR
+	 */
 	public function onBlockBreak(BlockBreakEvent $event) : void{
 		self::remove($position = $event->getBlock()->getPosition());
 

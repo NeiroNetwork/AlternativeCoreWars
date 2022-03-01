@@ -29,6 +29,10 @@ class Game extends SubPluginBase implements Listener{
 		return self::$status;
 	}
 
+	public static function getArena() : ?Arena{
+		return self::$arena;
+	}
+
 	public static function preGame(GameQueue $queue, Arena $arena) : void{
 		self::$arena = $arena;
 
@@ -76,6 +80,7 @@ class Game extends SubPluginBase implements Listener{
 
 	protected function onEnable() : void{
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
+
 		$this->debugCount = 0;
 		$this->getScheduler()->scheduleRepeatingTask(new CallbackTask(function() : void{
 			// TODO: ゲームを実装する (ここに…？)

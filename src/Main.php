@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace NeiroNetwork\AlternativeCoreWars;
 
+use NeiroNetwork\AlternativeCoreWars\core\BlockReformSystem;
 use NeiroNetwork\AlternativeCoreWars\core\Game;
 use NeiroNetwork\AlternativeCoreWars\core\InLobby;
 use NeiroNetwork\AlternativeCoreWars\core\PlayerBlockTracker;
+use NeiroNetwork\AlternativeCoreWars\core\GameArenaProtector;
 use NeiroNetwork\AlternativeCoreWars\core\ServerFeatureNormalizer;
 use NeiroNetwork\AlternativeCoreWars\core\TeamReferee;
 use NeiroNetwork\AlternativeCoreWars\utils\Broadcast;
@@ -31,13 +33,15 @@ class Main extends PluginBase{
 			new DiskResourceProvider($this->getFile() . "/resources/")
 		];
 
-		$this->plugins = [
-			new InLobby(...$parameters),
-			new Game(...$parameters),
-			new TeamReferee(...$parameters),
-			new ServerFeatureNormalizer(...$parameters),
-			new PlayerBlockTracker(...$parameters),
-		];
+		$this->plugins = array_map(fn($class) => new $class(...$parameters), [
+			InLobby::class,
+			Game::class,
+			TeamReferee::class,
+			ServerFeatureNormalizer::class,
+			PlayerBlockTracker::class,
+			GameArenaProtector::class,
+			BlockReformSystem::class,
+		]);
 	}
 
 	protected function onEnable() : void{

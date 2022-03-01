@@ -14,9 +14,12 @@ use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use NeiroNetwork\AlternativeCoreWars\utils\Broadcast;
 use NeiroNetwork\AlternativeCoreWars\utils\PlayerUtils;
 use pocketmine\entity\Human;
+use pocketmine\event\block\BlockBreakEvent;
+use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerExhaustEvent;
+use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemUseEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
@@ -102,7 +105,28 @@ class InLobby extends SubPluginBase implements Listener{
 		}
 	}
 
-	public function inLobby(Human $player) : bool{
+	public function onBreak(BlockBreakEvent $event) : void{
+		$player = $event->getPlayer();
+		if(!$player->isCreative(true) && $this->inLobby($player)){
+			$event->cancel();
+		}
+	}
+
+	public function onPlace(BlockPlaceEvent $event) : void{
+		$player = $event->getPlayer();
+		if(!$player->isCreative(true) && $this->inLobby($player)){
+			$event->cancel();
+		}
+	}
+
+	public function onInteract(PlayerInteractEvent $event) : void{
+		$player = $event->getPlayer();
+		if(!$player->isCreative(true) && $this->inLobby($player)){
+			$event->cancel();
+		}
+	}
+
+	private function inLobby(Human $player) : bool{
 		return $player->getWorld() === $this->getServer()->getWorldManager()->getDefaultWorld();
 	}
 }

@@ -23,6 +23,8 @@ class ArenaData{
 	private array $lenientProtections;
 	/** @var AxisAlignedBB[] */
 	private array $strictProtections;
+	/** @var AxisAlignedBB[] */
+	private array $protections;
 
 	public function __construct(array $data, World $world){
 		$this->name = (string) $data["name"];
@@ -64,29 +66,52 @@ class ArenaData{
 
 		$this->lenientProtections = array_map($aabbFunction, $data["lenient_protections"] ?? []);
 		$this->strictProtections = array_map($aabbFunction, $data["strict_protections"] ?? []);
+		$this->protections = array_merge($this->lenientProtections, $this->strictProtections);
 	}
 
 	public function getName() : string{
 		return $this->name;
 	}
 
+	/**
+	 * @return string[]
+	 */
 	public function getAuthors() : array{
 		return $this->authors;
 	}
 
+	/**
+	 * @return Position[][]
+	 */
 	public function getSpawns() : array{
 		return $this->spawns;
 	}
 
+	/**
+	 * @return Position[]
+	 */
 	public function getNexuses() : array{
 		return $this->nexuses;
 	}
 
+	/**
+	 * @return AxisAlignedBB[]
+	 */
 	public function getLenientProtections() : array{
 		return $this->lenientProtections;
 	}
 
+	/**
+	 * @return AxisAlignedBB[]
+	 */
 	public function getStrictProtections() : array{
 		return $this->strictProtections;
+	}
+
+	/**
+	 * @return AxisAlignedBB[]
+	 */
+	public function getAllProtections() : array{
+		return $this->protections;
 	}
 }
