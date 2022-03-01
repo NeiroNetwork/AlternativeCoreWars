@@ -23,10 +23,9 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 	 * @priority LOWEST
 	 */
 	public function onBlockBreak(BlockBreakEvent $event) : void{
+		if($event->getPlayer()->isCreative(true)) return;
 		$position = $event->getBlock()->getPosition();
-		if(Game::getArena()?->getWorld() !== $position->getWorld()){
-			return;
-		}
+		if(Game::getArena()?->getWorld() !== $position->getWorld()) return;
 
 		// TODO: 緩い保護は 復活する資源、草などのブロック を壊せるようにする
 		foreach(Game::getArena()->getData()->getAllProtections() as $protection){
@@ -41,10 +40,9 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 	 * @priority LOWEST
 	 */
 	public function onBlockPlace(BlockPlaceEvent $event) : void{
+		if($event->getPlayer()->isCreative(true)) return;
 		$position = $event->getBlock()->getPosition();
-		if(Game::getArena()?->getWorld() !== $position->getWorld()){
-			return;
-		}
+		if(Game::getArena()?->getWorld() !== $position->getWorld()) return;
 
 		foreach(Game::getArena()->getData()->getAllProtections() as $protection){
 			if($protection->isVectorInside($position)){
@@ -55,10 +53,9 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 	}
 
 	public function onBucketFill(PlayerBucketFillEvent $event) : void{
+		if($event->getPlayer()->isCreative(true)) return;
 		$position = $event->getBlockClicked()->getPosition();
-		if(Game::getArena()?->getWorld() !== $position->getWorld()){
-			return;
-		}
+		if(Game::getArena()?->getWorld() !== $position->getWorld()) return;
 
 		foreach(Game::getArena()->getData()->getAllProtections() as $protection){
 			if($protection->isVectorInside($position)){
@@ -69,10 +66,9 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 	}
 
 	public function onBucketEmpty(PlayerBucketEmptyEvent $event) : void{
+		if($event->getPlayer()->isCreative(true)) return;
 		$position = $event->getBlockClicked()->getPosition();
-		if(Game::getArena()?->getWorld() !== $position->getWorld()){
-			return;
-		}
+		if(Game::getArena()?->getWorld() !== $position->getWorld()) return;
 
 		foreach(Game::getArena()->getData()->getAllProtections() as $protection){
 			if($protection->isVectorInside($position)){
@@ -83,10 +79,9 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 	}
 
 	public function onInteract(PlayerInteractEvent $event) : void{
+		if($event->getPlayer()->isCreative(true)) return;
 		$position = $event->getBlock()->getPosition();
-		if(Game::getArena()?->getWorld() !== $position->getWorld()){
-			return;
-		}
+		if(Game::getArena()?->getWorld() !== $position->getWorld()) return;
 
 		if($event->getAction() === PlayerInteractEvent::RIGHT_CLICK_BLOCK && $event->getItem() instanceof Tool){
 			foreach(Game::getArena()->getData()->getAllProtections() as $protection){

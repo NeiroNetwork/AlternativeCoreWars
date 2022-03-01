@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace NeiroNetwork\AlternativeCoreWars\core;
 
-use NeiroNetwork\AlternativeCoreWars\constants\GameStatus;
 use NeiroNetwork\AlternativeCoreWars\constants\Items;
 use NeiroNetwork\AlternativeCoreWars\constants\Translations;
 use NeiroNetwork\AlternativeCoreWars\core\subs\Arena;
 use NeiroNetwork\AlternativeCoreWars\core\subs\GameQueue;
-use NeiroNetwork\AlternativeCoreWars\scheduler\CallbackTask;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use NeiroNetwork\AlternativeCoreWars\utils\Broadcast;
 use NeiroNetwork\AlternativeCoreWars\utils\PlayerUtils;
@@ -25,6 +23,7 @@ use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\VanillaItems;
 use pocketmine\player\Player;
+use pocketmine\scheduler\ClosureTask;
 use pocketmine\world\Position;
 
 class InLobby extends SubPluginBase implements Listener{
@@ -53,20 +52,27 @@ class InLobby extends SubPluginBase implements Listener{
 
 	protected function onEnable() : void{
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
-		$this->getScheduler()->scheduleRepeatingTask(new CallbackTask(function(){
-			if(Game::getStatus() !== GameStatus::WAITING) return;
-			$players = $this->getServer()->getWorldManager()->getDefaultWorld()->getPlayers();
-			if(count($this->queue) < self::MIN_PLAYER){
-				$this->voteTime = self::VOTE_TIME;
-				Broadcast::tip(Translations::WAITING_FOR_PLAYERS(), $players);
-			}else{
-				Broadcast::tip(Translations::GAME_STARTS_IN($this->voteTime--), $players);
+		$this->getScheduler()->scheduleRepeatingTask(new ClosureTask(\Closure::fromCallable([$this, "onTick"])), 20);
+	}
+
+	private function onTick() : void{
+		if(Game::isRunning()) return;
+
+		$players = $this->getServer()->getWorldManager()->getDefaultWorld()->getPlayers();
+		if(count($this->queue) < self::MIN_PLAYER){
+			$this->voteTime = self::VOTE_TIME;
+			Broadcast::tip(Translations::WAITING_FOR_PLAYERS(), $players);
+		}else{
+			Broadcast::tip(Translations::GAME_STARTS_IN($this->voteTime--), $players);
+			if(Game::getArena() !== null){
+				$this->voteTime++;
 			}
-			if($this->voteTime === -1){
-				Game::preGame($this->queue, new Arena(array_rand(Arena::getArenaList())));
-				$this->queue->reset();
-			}
-		}), 20);
+		}
+
+		if($this->voteTime === -1){
+			Game::preGame($this->queue, new Arena(array_rand(Arena::getArenaList())));
+			$this->queue->reset();
+		}
 	}
 
 	public function onJoin(PlayerJoinEvent $event) : void{
@@ -82,11 +88,7 @@ class InLobby extends SubPluginBase implements Listener{
 
 		$item = $event->getItem();
 		if($item->equals(Items::QUEUE_COMPASS())){
-			match(Game::getStatus()){
-				GameStatus::WAITING => $this->queue->add($player),
-				GameStatus::IN_GAME => Game::directJoin($player),
-				default => null,
-			};
+			Game::isRunning() ? Game::directJoin($player) : $this->queue->add($player);
 		}
 	}
 

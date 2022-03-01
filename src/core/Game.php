@@ -9,6 +9,8 @@ use NeiroNetwork\AlternativeCoreWars\constants\Teams;
 use NeiroNetwork\AlternativeCoreWars\constants\Translations;
 use NeiroNetwork\AlternativeCoreWars\core\subs\Arena;
 use NeiroNetwork\AlternativeCoreWars\core\subs\GameQueue;
+use NeiroNetwork\AlternativeCoreWars\event\GameEndEvent;
+use NeiroNetwork\AlternativeCoreWars\event\GameStartEvent;
 use NeiroNetwork\AlternativeCoreWars\scheduler\CallbackTask;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use NeiroNetwork\AlternativeCoreWars\utils\Broadcast;
@@ -21,16 +23,15 @@ use pocketmine\player\Player;
 
 class Game extends SubPluginBase implements Listener{
 
-	private static int $status = GameStatus::WAITING;
-
 	private static ?Arena $arena = null;
-
-	public static function getStatus() : int{
-		return self::$status;
-	}
+	private static bool $running = false;
 
 	public static function getArena() : ?Arena{
 		return self::$arena;
+	}
+
+	public static function isRunning() : bool{
+		return self::$running;
 	}
 
 	public static function preGame(GameQueue $queue, Arena $arena) : void{
@@ -41,7 +42,8 @@ class Game extends SubPluginBase implements Listener{
 			self::directJoin($player);
 		}
 
-		self::$status = GameStatus::IN_GAME;
+		self::$running = true;
+		(new GameStartEvent())->call();
 	}
 
 	public static function directJoin(Player $player) : void{
@@ -68,6 +70,12 @@ class Game extends SubPluginBase implements Listener{
 	}
 
 	public static function postGame() : void{
+		self::$running = false;
+		(new GameEndEvent())->call();
+		self::cleanUp();
+	}
+
+	public static function cleanUp() : void{
 		TeamReferee::reset();
 
 		foreach(self::$arena->getWorld()->getPlayers() as $player){
@@ -75,7 +83,6 @@ class Game extends SubPluginBase implements Listener{
 		}
 
 		self::$arena = null;
-		self::$status = GameStatus::WAITING;
 	}
 
 	protected function onEnable() : void{
@@ -84,7 +91,8 @@ class Game extends SubPluginBase implements Listener{
 		$this->debugCount = 0;
 		$this->getScheduler()->scheduleRepeatingTask(new CallbackTask(function() : void{
 			// TODO: ゲームを実装する (ここに…？)
-			if(self::$status === GameStatus::IN_GAME){
+			if(self::isRunning()){
+				Broadcast::tip((string) $this->debugCount, self::$arena->getWorld()->getPlayers());
 				if($this->debugCount++ > 60){
 					$this->debugCount = 0;
 					self::postGame();

@@ -34,6 +34,7 @@ final class PlayerUtils{
 	public static function resetKnownAllStates(Player $player) : void{
 		self::clearAllInventories($player);
 		$player->getEnderInventory()->clearAll();
+		$player->selectHotbarSlot(0);
 
 		$player->getEffects()->clear();
 

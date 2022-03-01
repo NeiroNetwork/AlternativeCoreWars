@@ -58,7 +58,9 @@ class PlayerBlockTracker extends SubPluginBase implements Listener{
 	 * @priority MONITOR
 	 */
 	public function onBlockPlace(BlockPlaceEvent $event) : void{
-		self::add($event->getBlock()->getPosition());
+		if(!$event->getPlayer()->isCreative()){
+			self::add($event->getBlock()->getPosition());
+		}
 	}
 
 	/**
