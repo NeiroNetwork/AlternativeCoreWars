@@ -7,3 +7,4 @@ depend:
   - TranslationLibrary
   - VoidGenerator
   - NoWorldCorruption
+  - ExperimentalFeatures

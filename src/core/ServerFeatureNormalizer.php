@@ -19,6 +19,12 @@ class ServerFeatureNormalizer extends SubPluginBase{
 		$this->reduceCommandPermissions();
 	}
 
+	protected function onEnable() : void{
+		foreach($this->getServer()->getWorldManager()->getWorlds() as $world){
+			$world->stopTime();
+		}
+	}
+
 	private function normalizeSettings() : void{
 		$group = $this->getServer()->getConfigGroup();
 

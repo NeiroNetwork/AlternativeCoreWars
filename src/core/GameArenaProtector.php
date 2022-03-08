@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace NeiroNetwork\AlternativeCoreWars\core;
 
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
+use pocketmine\block\Flowable;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
@@ -27,8 +28,28 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 		$position = $event->getBlock()->getPosition();
 		if(Game::getArena()?->getWorld() !== $position->getWorld()) return;
 
-		// TODO: 緩い保護は 復活する資源、草などのブロック を壊せるようにする
-		foreach(Game::getArena()->getData()->getAllProtections() as $protection){
+		foreach(Game::getArena()->getData()->getStrictProtections() as $protection){
+			if($protection->isVectorInside($position)){
+				$event->cancel();
+				break;
+			}
+		}
+	}
+
+	/**
+	 * @priority HIGH
+	 */
+	public function onBlockBreak2(BlockBreakEvent $event) : void{
+		if($event->getPlayer()->isCreative(true)) return;
+		$position = $event->getBlock()->getPosition();
+		if(Game::getArena()?->getWorld() !== $position->getWorld()) return;
+
+		if(
+			isset($event->modifiedByBlockReformSystem) ||
+			($event->getBlock() instanceof Flowable && count($event->getBlock()->getCollisionBoxes()) === 0)
+		) return;
+
+		foreach(Game::getArena()->getData()->getLenientProtections() as $protection){
 			if($protection->isVectorInside($position)){
 				$event->cancel();
 				break;
