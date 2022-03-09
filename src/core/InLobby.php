@@ -16,6 +16,7 @@ use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerDropItemEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemUseEvent;
@@ -28,11 +29,11 @@ use pocketmine\world\Position;
 
 class InLobby extends SubPluginBase implements Listener{
 
-	private const VOTE_TIME = 10;	//120
+	private const VOTE_TIME = 1;	//120
 	private const MIN_PLAYER = 1;	//10
 
 	public static function teleportToLobby(Player $player) : void{
-		PlayerUtils::resetKnownAllStates($player);
+		PlayerUtils::resetAllStates($player);
 
 		$position = $player->getServer()->getWorldManager()->getDefaultWorld()->getSpawnLocation();
 		$player->teleport(Position::fromObject($position->add(0.5, 0, 0.5), $position->getWorld()), 0, 0);
@@ -122,6 +123,13 @@ class InLobby extends SubPluginBase implements Listener{
 	}
 
 	public function onInteract(PlayerInteractEvent $event) : void{
+		$player = $event->getPlayer();
+		if(!$player->isCreative(true) && $this->inLobby($player)){
+			$event->cancel();
+		}
+	}
+
+	public function onDropItem(PlayerDropItemEvent $event) : void{
 		$player = $event->getPlayer();
 		if(!$player->isCreative(true) && $this->inLobby($player)){
 			$event->cancel();

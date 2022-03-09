@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace NeiroNetwork\AlternativeCoreWars\utils;
 
-use pocketmine\entity\Attribute;
-use pocketmine\entity\AttributeFactory;
+use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 
 final class PlayerUtils{
@@ -29,21 +28,16 @@ final class PlayerUtils{
 	}
 
 	/**
-	 * インベントリ、エフェクト、空腹、体力、経験値、ゲームモード、大きさ、名前、移動制限、火 を初期状態に戻します
+	 * インベントリ、エフェクト、空腹、体力、経験値、ゲームモード、大きさ、名前、移動制限、火 などを初期状態に戻します
 	 */
-	public static function resetKnownAllStates(Player $player) : void{
+	public static function resetAllStates(Player $player) : void{
 		self::clearAllInventories($player);
 		$player->getEnderInventory()->clearAll();
 		$player->selectHotbarSlot(0);
 
-		$player->getEffects()->clear();
-
 		self::resetHunger($player);
 
-		$player->setMaxHealth(20);
-		$player->setHealth(20.0);
-
-		$player->getXpManager()->setXpAndProgress(0, 0);
+		$player->getXpManager()->setXpAndProgress(0, 0.0);
 		$player->getXpManager()->setLifetimeTotalXp(0);
 		$player->getXpManager()->resetXpCooldown(0);
 
@@ -58,6 +52,30 @@ final class PlayerUtils{
 
 		$player->setImmobile(false);
 
-		$player->extinguish();
+		{	/** @see Player::actuallyRespawn() */
+			$player->setSprinting(false);
+			$player->setSneaking(false);
+			$player->setFlying(false);
+
+			$player->extinguish();
+			$player->setAirSupplyTicks($player->getMaxAirSupplyTicks());
+			$player->deadTicks = 0;
+			$player->noDamageTicks = 60;
+
+			$player->getEffects()->clear();
+			$player->setHealth($player->getMaxHealth());
+
+			foreach($player->getAttributeMap()->getAll() as $attr){
+				$attr->resetToDefault();
+			}
+
+			$player->spawnToAll();
+			$player->scheduleUpdate();
+		}
+	}
+
+	public static function setLimitedSpectator(Player $player) : void{
+		$player->setGamemode(GameMode::SPECTATOR());
+		$player->setHasBlockCollision(true);
 	}
 }

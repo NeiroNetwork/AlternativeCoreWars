@@ -15,6 +15,7 @@ use NeiroNetwork\AlternativeCoreWars\scheduler\CallbackTask;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use NeiroNetwork\AlternativeCoreWars\utils\Broadcast;
 use NeiroNetwork\AlternativeCoreWars\utils\PlayerUtils;
+use NeiroNetwork\AlternativeCoreWars\utils\SoulboundItem;
 use pocketmine\event\Listener;
 use pocketmine\item\Armor;
 use pocketmine\item\VanillaItems;
@@ -47,7 +48,7 @@ class Game extends SubPluginBase implements Listener{
 	}
 
 	public static function directJoin(Player $player) : void{
-		PlayerUtils::resetKnownAllStates($player);
+		PlayerUtils::resetAllStates($player);
 
 		TeamReferee::randomJoin($player);
 		$team = TeamReferee::getTeam($player);
@@ -56,13 +57,19 @@ class Game extends SubPluginBase implements Listener{
 		$player->teleport(reset(self::$arena->getData()->getSpawns()[$team]));
 
 		// TODO: give items (Kits との連携)
-		$player->getArmorInventory()->setChestplate(VanillaItems::LEATHER_TUNIC());
-		$player->getInventory()->setItem(0, VanillaItems::WOODEN_HOE());
+		{
+			$player->getArmorInventory()->setChestplate(VanillaItems::LEATHER_TUNIC());
+			$player->getInventory()->setItem(0, VanillaItems::WOODEN_HOE());
+		}
+
+		foreach($player->getInventory()->getContents() as $index => $item){
+			$player->getInventory()->setItem($index, SoulboundItem::create($item));
+		}
 
 		foreach($player->getArmorInventory()->getContents() as $index => $armor){
 			if($armor instanceof Armor){
 				$armor->setCustomColor(Teams::toColor($team));
-				$player->getArmorInventory()->setItem($index, $armor);
+				$player->getArmorInventory()->setItem($index, SoulboundItem::create($armor));
 			}
 		}
 
@@ -93,7 +100,7 @@ class Game extends SubPluginBase implements Listener{
 			// TODO: ゲームを実装する (ここに…？)
 			if(self::isRunning()){
 				Broadcast::tip((string) $this->debugCount, self::$arena->getWorld()->getPlayers());
-				if($this->debugCount++ > 60){
+				if($this->debugCount++ > 300){
 					$this->debugCount = 0;
 					self::postGame();
 				}

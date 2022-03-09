@@ -7,9 +7,10 @@ namespace NeiroNetwork\AlternativeCoreWars;
 use NeiroNetwork\AlternativeCoreWars\core\BlockReformSystem;
 use NeiroNetwork\AlternativeCoreWars\core\Game;
 use NeiroNetwork\AlternativeCoreWars\core\InLobby;
+use NeiroNetwork\AlternativeCoreWars\core\NoDeathScreenSystem;
 use NeiroNetwork\AlternativeCoreWars\core\PlayerBlockTracker;
 use NeiroNetwork\AlternativeCoreWars\core\GameArenaProtector;
-use NeiroNetwork\AlternativeCoreWars\core\ServerFeatureNormalizer;
+use NeiroNetwork\AlternativeCoreWars\core\ServerSpecificationNormalizer;
 use NeiroNetwork\AlternativeCoreWars\core\TeamReferee;
 use NeiroNetwork\AlternativeCoreWars\utils\Broadcast;
 use NeiroNetwork\TranslationLibrary\Translator;
@@ -37,10 +38,11 @@ class Main extends PluginBase{
 			InLobby::class,
 			Game::class,
 			TeamReferee::class,
-			ServerFeatureNormalizer::class,
+			ServerSpecificationNormalizer::class,
 			PlayerBlockTracker::class,
 			GameArenaProtector::class,
 			BlockReformSystem::class,
+			NoDeathScreenSystem::class,
 		]);
 	}
 
