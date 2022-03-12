@@ -27,7 +27,7 @@ use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\world\Position;
 
-class InLobby extends SubPluginBase implements Listener{
+class Lobby extends SubPluginBase implements Listener{
 
 	private const VOTE_TIME = 1;	//120
 	private const MIN_PLAYER = 1;	//10
@@ -89,12 +89,14 @@ class InLobby extends SubPluginBase implements Listener{
 
 		$item = $event->getItem();
 		if($item->equals(Items::QUEUE_COMPASS())){
-			Game::isRunning() ? Game::directJoin($player) : $this->queue->add($player);
+			Game::isRunning() ? Game::initialJoin($player) : $this->queue->add($player);
 		}
 	}
 
 	public function onDamage(EntityDamageEvent $event) : void{
-		if(($player = $event->getEntity()) instanceof Player && $this->inLobby($player)){
+		$player = $event->getEntity();
+		if($player instanceof Player && $this->inLobby($player)){
+			$player->sendMessage("Cancelled!");
 			$event->cancel();
 			if($event->getCause() === EntityDamageEvent::CAUSE_VOID){
 				self::teleportToLobby($player);

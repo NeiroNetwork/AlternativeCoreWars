@@ -37,6 +37,7 @@ class ServerSpecificationNormalizer extends SubPluginBase implements Listener{
 
 	protected function onEnable() : void{
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
+		array_map(fn($world) => $world->stopTime(), $this->getServer()->getWorldManager()->getWorlds());
 	}
 
 	private function normalizeServerSettings() : void{

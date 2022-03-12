@@ -6,11 +6,12 @@ namespace NeiroNetwork\AlternativeCoreWars;
 
 use NeiroNetwork\AlternativeCoreWars\core\BlockReformSystem;
 use NeiroNetwork\AlternativeCoreWars\core\Game;
-use NeiroNetwork\AlternativeCoreWars\core\InLobby;
+use NeiroNetwork\AlternativeCoreWars\core\Lobby;
 use NeiroNetwork\AlternativeCoreWars\core\NoDeathScreenSystem;
 use NeiroNetwork\AlternativeCoreWars\core\PlayerBlockTracker;
 use NeiroNetwork\AlternativeCoreWars\core\GameArenaProtector;
 use NeiroNetwork\AlternativeCoreWars\core\ServerSpecificationNormalizer;
+use NeiroNetwork\AlternativeCoreWars\core\SoulboundItemMonitor;
 use NeiroNetwork\AlternativeCoreWars\core\TeamReferee;
 use NeiroNetwork\AlternativeCoreWars\utils\Broadcast;
 use NeiroNetwork\TranslationLibrary\Translator;
@@ -35,7 +36,7 @@ class Main extends PluginBase{
 		];
 
 		$this->plugins = array_map(fn($class) => new $class(...$parameters), [
-			InLobby::class,
+			Lobby::class,
 			Game::class,
 			TeamReferee::class,
 			ServerSpecificationNormalizer::class,
@@ -43,6 +44,7 @@ class Main extends PluginBase{
 			GameArenaProtector::class,
 			BlockReformSystem::class,
 			NoDeathScreenSystem::class,
+			SoulboundItemMonitor::class,
 		]);
 	}
 

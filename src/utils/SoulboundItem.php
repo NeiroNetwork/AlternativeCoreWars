@@ -8,23 +8,26 @@ use pocketmine\item\Item;
 
 final class SoulboundItem{
 
-	public static function create(Item $item) : Item{
+	private const TAG_SOULBOUND = "AlternativeCoreWars/Soulbound";
+	private const DISPLAY_LORE = "Kit Item";
+
+	public static function create(Item $item, bool $displayLore = true) : Item{
 		$tag = $item->getNamedTag();
-		$tag->setByte("AlternativeCoreWars/Soulbound", 1);
+		$tag->setByte(self::TAG_SOULBOUND, 1);
 		$item->setNamedTag($tag);
-		$item->setLore(["Kit Item"]);
+		if($displayLore) $item->setLore([self::DISPLAY_LORE]);
 		return $item;
 	}
 
 	public static function remove(Item $item) : Item{
 		$tag = $item->getNamedTag();
-		$tag->removeTag("AlternativeCoreWars/Soulbound");
+		$tag->removeTag(self::TAG_SOULBOUND);
 		$item->setNamedTag($tag);
-		$item->setLore(array_map(fn($str) => str_replace("Kit Item", "", $str), $item->getLore()));
+		$item->setLore(array_map(fn($str) => str_replace(self::DISPLAY_LORE, "", $str), $item->getLore()));
 		return $item;
 	}
 
 	public static function is(Item $item) : bool{
-		return $item->getNamedTag()->getByte("AlternativeCoreWars/Soulbound", 0) === 1;
+		return $item->getNamedTag()->getByte(self::TAG_SOULBOUND, 0) === 1;
 	}
 }

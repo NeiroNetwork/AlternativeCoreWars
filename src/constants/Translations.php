@@ -19,4 +19,8 @@ final class Translations{
 	public static function JOINED_TEAM(string $team) : Translatable{
 		return new Translatable("joined_team.$team");
 	}
+
+	public static function YOU_DIED() : Translatable{
+		return new Translatable("message.you_died");
+	}
 }

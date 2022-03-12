@@ -8,7 +8,7 @@ use NeiroNetwork\AlternativeCoreWars\constants\BroadcastChannels;
 use NeiroNetwork\AlternativeCoreWars\constants\Teams;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use NeiroNetwork\AlternativeCoreWars\utils\ArrayUtils;
-use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\player\Player;
@@ -99,7 +99,17 @@ class TeamReferee extends SubPluginBase implements Listener{
 		self::leave($event->getPlayer());
 	}
 
-	public function onDamage(EntityDamageEvent $event) : void{
-		// TODO: 同じチームのプレイヤー同士の攻撃を無効化する
+	public function onDamage(EntityDamageByEntityEvent $event) : void{
+		$damager = $event->getDamager();
+		$victim = $event->getEntity();
+		if(!$damager instanceof Player || !$victim instanceof Player) return;
+
+		$team1 = self::getTeam($damager);
+		$team2 = self::getTeam($victim);
+		if($team1 !== null && $team2 !== null && $team1 === $team2){
+			$damager->sendMessage("Damager: team grief");
+			$victim->sendMessage("Victim: team grief");
+			$event->cancel();
+		}
 	}
 }
