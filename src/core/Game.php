@@ -262,6 +262,9 @@ class Game extends SubPluginBase implements Listener{
 		$center = Position::fromObject($position->add(0.5, 0.5, 0.5), $position->getWorld());
 		Broadcast::soundPos($center, "random.anvil_land", pitch: mt_rand(50, 101) / 100);
 
-		// TODO: ゲーム終了判定
+		$aliveTeams = array_filter($this->nexus, fn($health) => $health > 0);
+		if(count($aliveTeams) === 1){
+			self::postGame(array_key_first($aliveTeams));
+		}
 	}
 }
