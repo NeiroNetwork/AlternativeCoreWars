@@ -69,6 +69,7 @@ class Arena{
 		$this->world = $this->server->getWorldManager()->getWorldByName("../temporary_worlds/$name");
 
 		$this->world->setAutoSave(true);
+		$this->world->setDifficulty(World::DIFFICULTY_NORMAL);
 	}
 
 	private function unloadWorld() : void{

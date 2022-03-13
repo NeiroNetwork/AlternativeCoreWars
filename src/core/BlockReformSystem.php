@@ -57,8 +57,8 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 			$event->setXpDropAmount(0);
 
 			// HACK: GameArenaProtectorで資源ブロックを壊したかどうかを判定する
-			$event->modifiedByBlockReformSystem = true;
-		}
+			$event->bypassBlockBreakProtector = true;
+	}
 	}
 
 	public function onGameEnd(GameEndEvent $event) : void{

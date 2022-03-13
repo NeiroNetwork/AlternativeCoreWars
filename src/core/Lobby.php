@@ -19,6 +19,7 @@ use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerDropItemEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerInteractEvent;
+use pocketmine\event\player\PlayerItemConsumeEvent;
 use pocketmine\event\player\PlayerItemUseEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
@@ -26,6 +27,7 @@ use pocketmine\item\VanillaItems;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\world\Position;
+use pocketmine\world\World;
 
 class Lobby extends SubPluginBase implements Listener{
 
@@ -54,10 +56,11 @@ class Lobby extends SubPluginBase implements Listener{
 	protected function onEnable() : void{
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 		$this->getScheduler()->scheduleRepeatingTask(new ClosureTask(\Closure::fromCallable([$this, "onTick"])), 20);
+		$this->getServer()->getWorldManager()->getDefaultWorld()->setDifficulty(World::DIFFICULTY_PEACEFUL);
 	}
 
 	private function onTick() : void{
-		if(Game::isRunning()) return;
+		if(Game::getArena() !== null) return;
 
 		$players = $this->getServer()->getWorldManager()->getDefaultWorld()->getPlayers();
 		if(count($this->queue) < self::MIN_PLAYER){
@@ -96,17 +99,10 @@ class Lobby extends SubPluginBase implements Listener{
 	public function onDamage(EntityDamageEvent $event) : void{
 		$player = $event->getEntity();
 		if($player instanceof Player && $this->inLobby($player)){
-			$player->sendMessage("Cancelled!");
 			$event->cancel();
 			if($event->getCause() === EntityDamageEvent::CAUSE_VOID){
 				self::teleportToLobby($player);
 			}
-		}
-	}
-
-	public function onExhaust(PlayerExhaustEvent $event) : void{
-		if($this->inLobby($event->getPlayer())){
-			$event->cancel();
 		}
 	}
 
@@ -132,6 +128,13 @@ class Lobby extends SubPluginBase implements Listener{
 	}
 
 	public function onDropItem(PlayerDropItemEvent $event) : void{
+		$player = $event->getPlayer();
+		if(!$player->isCreative(true) && $this->inLobby($player)){
+			$event->cancel();
+		}
+	}
+
+	public function onItemConsume(PlayerItemConsumeEvent $event) : void{
 		$player = $event->getPlayer();
 		if(!$player->isCreative(true) && $this->inLobby($player)){
 			$event->cancel();

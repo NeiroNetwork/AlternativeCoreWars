@@ -70,6 +70,13 @@ class TeamReferee extends SubPluginBase implements Listener{
 		return self::$indexes[$player->getId()] ?? null;
 	}
 
+	/**
+	 * @return Player[]
+	 */
+	public static function getTeams(string $team) : array{
+		return self::$teams[$team];
+	}
+
 	// FIXME: このメソッドを公開すべきかどうか分からない
 	protected static function joinTo(Player $player, string $team) : void{
 		self::$teams[$team][$player->getId()] = $player;

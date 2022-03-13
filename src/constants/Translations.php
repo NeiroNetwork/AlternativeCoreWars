@@ -23,4 +23,12 @@ final class Translations{
 	public static function YOU_DIED() : Translatable{
 		return new Translatable("message.you_died");
 	}
+
+	public static function DESTROY_ALLY_NEXUS() : Translatable{
+		return new Translatable("message.cannot_destroy_ally_nexus");
+	}
+
+	public static function CANNOT_DESTROY_NEXUS() : Translatable{
+		return new Translatable("message.cannot_destroy_nexus");
+	}
 }

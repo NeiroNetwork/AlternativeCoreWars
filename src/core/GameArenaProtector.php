@@ -16,11 +16,9 @@ use pocketmine\event\player\PlayerBucketFillEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\Fertilizer;
 use pocketmine\item\Tool;
-use pocketmine\math\Vector3;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
-use pocketmine\world\ChunkManager;
 use pocketmine\world\Position;
 
 class GameArenaProtector extends SubPluginBase implements Listener{
@@ -53,7 +51,6 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 		foreach(Game::getArena()->getData()->getStrictProtections() as $protection){
 			if($protection->isVectorInside($position)){
 				$event->cancel();
-				$this->preventGlitches($event->getPlayer());
 				break;
 			}
 		}
@@ -68,16 +65,31 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 		if(Game::getArena()?->getWorld() !== $position->getWorld()) return;
 
 		if(
-			isset($event->modifiedByBlockReformSystem) ||
+			isset($event->bypassBlockBreakProtector) ||
 			($event->getBlock() instanceof Flowable && count($event->getBlock()->getCollisionBoxes()) === 0)
 		) return;
 
 		foreach(Game::getArena()->getData()->getLenientProtections() as $protection){
 			if($protection->isVectorInside($position)){
 				$event->cancel();
-				$this->preventGlitches($event->getPlayer());
 				break;
 			}
+		}
+	}
+
+	/**
+	 * @priority MONITOR
+	 * @handleCancelled
+	 */
+	public function onBlockBreak3(BlockBreakEvent $event) : void{
+		$player = $event->getPlayer();
+		if(
+			!$player->isCreative(true) &&
+			Game::getArena()?->getWorld() === $player->getWorld() &&
+			$event->isCancelled() &&
+			count($event->getBlock()->getCollisionBoxes()) !== 0
+		){
+			$this->preventGlitches($player);
 		}
 	}
 
