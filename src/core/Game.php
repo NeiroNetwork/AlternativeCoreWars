@@ -20,6 +20,8 @@ use NeiroNetwork\AlternativeCoreWars\utils\Broadcast;
 use NeiroNetwork\AlternativeCoreWars\utils\PlayerUtils;
 use NeiroNetwork\AlternativeCoreWars\utils\SoulboundItem;
 use NeiroNetwork\AlternativeCoreWars\utils\Utilities;
+use NeiroNetwork\AlternativeCoreWars\world\NexusDestroySound;
+use pocketmine\block\VanillaBlocks;
 use pocketmine\entity\effect\EffectInstance;
 use pocketmine\entity\effect\VanillaEffects;
 use pocketmine\entity\Location;
@@ -35,6 +37,7 @@ use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\utils\TextFormat;
 use pocketmine\world\Position;
+use pocketmine\world\sound\ExplodeSound;
 
 class Game extends SubPluginBase implements Listener{
 
@@ -177,7 +180,7 @@ class Game extends SubPluginBase implements Listener{
 	public function onGameEnd(GameEndEvent $event) : void{
 		/** @var Fireworks $fireworks */
 		$fireworks = ItemFactory::getInstance()->get(ItemIds::FIREWORKS);
-		$fireworks->addExplosion(Fireworks::TYPE_HUGE_SPHERE,
+		$fireworks->addExplosion(Fireworks::TYPE_SMALL_SPHERE,
 			match($victor = $event->getVictor()){
 				Teams::RED => Fireworks::COLOR_RED,
 				Teams::BLUE => Fireworks::COLOR_BLUE,
@@ -259,8 +262,14 @@ class Game extends SubPluginBase implements Listener{
 		// TODO: メッセージなど送信
 		// TODO: ネクサス破壊の演出
 		Broadcast::sound("note.harp", pitch: 1.6, recipients: BroadcastChannels::fromTeam($ev->getTeam()));
-		$center = Position::fromObject($position->add(0.5, 0.5, 0.5), $position->getWorld());
-		Broadcast::soundPos($center, "random.anvil_land", pitch: mt_rand(50, 101) / 100);
+		$sound = $this->nexus[$ev->getTeam()] > 0 ? new NexusDestroySound() : new ExplodeSound();
+		$position->getWorld()->addSound($position->add(0.5, 0.5, 0.5), $sound);
+
+		if($this->nexus[$ev->getTeam()] <= 0){
+			$this->getScheduler()->scheduleDelayedTask(new ClosureTask(fn() =>
+				$position->getWorld()->setBlock($position, VanillaBlocks::BEDROCK(), false)
+			), 1);
+		}
 
 		$aliveTeams = array_filter($this->nexus, fn($health) => $health > 0);
 		if(count($aliveTeams) === 1){

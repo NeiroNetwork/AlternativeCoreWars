@@ -119,11 +119,6 @@ final class Broadcast{
 		return count($recipients);
 	}
 
-	public static function soundPos(Position $position, string $sound, float $volume = 1.0, float $pitch = 1.0) : void{
-		$pk = PlaySoundPacket::create($sound, $position->x, $position->y, $position->z, $volume, $pitch);
-		Server::getInstance()->broadcastPackets($position->getWorld()->getPlayers(), [$pk]);
-	}
-
 	/**
 	 * @param Player[]|string|null $recipients
 	 *
