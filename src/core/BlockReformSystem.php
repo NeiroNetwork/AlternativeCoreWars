@@ -24,6 +24,9 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 		$this->setup();
 	}
 
+	/**
+	 * @priority LOW
+	 */
 	public function onBlockBreak(BlockBreakEvent $event) : void{
 		if($event->getInstaBreak()) return;		// クリエイティブでない
 

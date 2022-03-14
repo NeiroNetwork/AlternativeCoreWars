@@ -114,8 +114,6 @@ class TeamReferee extends SubPluginBase implements Listener{
 		$team1 = self::getTeam($damager);
 		$team2 = self::getTeam($victim);
 		if($team1 !== null && $team2 !== null && $team1 === $team2){
-			$damager->sendMessage("Damager: team grief");
-			$victim->sendMessage("Victim: team grief");
 			$event->cancel();
 		}
 	}

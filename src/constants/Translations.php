@@ -31,4 +31,8 @@ final class Translations{
 	public static function CANNOT_DESTROY_NEXUS() : Translatable{
 		return new Translatable("message.cannot_destroy_nexus");
 	}
+
+	public static function START_NEW_PHASE(int $phase) : Translatable{
+		return new Translatable("message.start_new_phase", ["phase" => $phase]);
+	}
 }

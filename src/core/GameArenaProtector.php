@@ -6,6 +6,7 @@ namespace NeiroNetwork\AlternativeCoreWars\core;
 
 use NeiroNetwork\AlternativeCoreWars\event\GameEndEvent;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
+use pocketmine\block\CraftingTable;
 use pocketmine\block\Flowable;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
@@ -57,7 +58,7 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 	}
 
 	/**
-	 * @priority HIGH
+	 * @priority NORMAL
 	 */
 	public function onBlockBreak2(BlockBreakEvent $event) : void{
 		if($event->getPlayer()->isCreative(true)) return;
@@ -84,7 +85,7 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 	public function onBlockBreak3(BlockBreakEvent $event) : void{
 		$player = $event->getPlayer();
 		if(
-			!$player->isCreative(true) &&
+			!$player->isCreative() &&
 			Game::getArena()?->getWorld() === $player->getWorld() &&
 			$event->isCancelled() &&
 			count($event->getBlock()->getCollisionBoxes()) !== 0
@@ -157,6 +158,14 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 			foreach(Game::getArena()->getData()->getAllProtections() as $protection){
 				if($protection->isVectorInside($position)){
 					$event->cancel();
+
+					// (無理矢理)動作してほしいブロックだけアクションを起こさせる
+					// FIXME: チェストを開いたのに一瞬でインベントリが閉じて、サーバー側では開きっぱなしになるというバグが発生する (チェストに限らない)
+					$player = $event->getPlayer();
+					$block = $event->getBlock();
+					if(!$player->isSneaking() && ($position->getWorld()->getTile($position) !== null || $block instanceof CraftingTable)){
+						$block->onInteract($item, $event->getFace(), $event->getTouchVector(), $player);
+					}
 					break;
 				}
 			}

@@ -12,6 +12,7 @@ use NeiroNetwork\AlternativeCoreWars\constants\Translations;
 use NeiroNetwork\AlternativeCoreWars\core\subs\Arena;
 use NeiroNetwork\AlternativeCoreWars\core\subs\GameQueue;
 use NeiroNetwork\AlternativeCoreWars\event\GameEndEvent;
+use NeiroNetwork\AlternativeCoreWars\event\GameFinishEvent;
 use NeiroNetwork\AlternativeCoreWars\event\GameStartEvent;
 use NeiroNetwork\AlternativeCoreWars\event\NexusDamageEvent;
 use NeiroNetwork\AlternativeCoreWars\event\PlayerDeathWithoutDeathScreenEvent;
@@ -26,6 +27,7 @@ use pocketmine\entity\effect\EffectInstance;
 use pocketmine\entity\effect\VanillaEffects;
 use pocketmine\entity\Location;
 use pocketmine\event\block\BlockBreakEvent;
+use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\item\Armor;
@@ -36,7 +38,6 @@ use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\utils\TextFormat;
-use pocketmine\world\Position;
 use pocketmine\world\sound\ExplodeSound;
 
 class Game extends SubPluginBase implements Listener{
@@ -114,6 +115,8 @@ class Game extends SubPluginBase implements Listener{
 	}
 
 	private static function cleanUp() : void{
+		(new GameFinishEvent())->call();
+
 		TeamReferee::reset();
 
 		foreach(self::$arena->getWorld()->getPlayers() as $player){
@@ -134,17 +137,12 @@ class Game extends SubPluginBase implements Listener{
 		$this->displaySidebarStatus();
 
 		if($this->time++ >= self::GAME_TIME_TABLE[$this->phase]){
-			// TODO: フェーズ移行時の演出
-			Broadcast::sound("note.pling", pitch: 0.5, recipients: self::$arena->getWorld()->getPlayers());
-			$this->getScheduler()->scheduleDelayedTask(new ClosureTask(fn() =>
-				Broadcast::sound("note.pling", recipients: self::$arena->getWorld()->getPlayers())
-			), 5);
-			$this->getScheduler()->scheduleDelayedTask(new ClosureTask(fn() =>
-			Broadcast::sound("note.pling", pitch: 2.0, recipients: self::$arena->getWorld()->getPlayers())
-			), 10);
-
 			$this->phase++;
 			$this->time = 0;
+
+			// TODO: フェーズ移行時の演出
+			Broadcast::message(Translations::START_NEW_PHASE($this->phase + 1), self::$arena->getWorld()->getPlayers());
+			Broadcast::sound("mob.wither.spawn", recipients: self::$arena->getWorld()->getPlayers());
 		}
 	}
 
@@ -168,6 +166,10 @@ class Game extends SubPluginBase implements Listener{
 		$player = $event->getPlayer();
 		Broadcast::title(Translations::YOU_DIED(), " ", recipients: [$player]);
 		$player->getEffects()->add(new EffectInstance(VanillaEffects::BLINDNESS(), 30, visible: false));
+
+		if($player->getLastDamageCause()->getCause() === EntityDamageEvent::CAUSE_VOID){
+			$player->teleport($player->getPosition()->add(0, $player->getFallDistance(), 0));
+		}
 
 		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use ($player){
 			// TODO: 実際はリスポーンできる場所を選びリスポーンする
@@ -209,7 +211,7 @@ class Game extends SubPluginBase implements Listener{
 
 	public function onExhaust(PlayerExhaustEvent $event) : void{
 		if($event->getPlayer()?->getWorld() === self::$arena?->getWorld()){
-			$event->setAmount($event->getAmount() / mt_rand(4, 7));
+			$event->setAmount($event->getAmount() * (mt_rand(50, 75) / 100));
 		}
 	}
 

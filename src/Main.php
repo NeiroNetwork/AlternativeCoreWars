@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace NeiroNetwork\AlternativeCoreWars;
 
 use NeiroNetwork\AlternativeCoreWars\core\BlockReformSystem;
+use NeiroNetwork\AlternativeCoreWars\core\EnderChestInventoryKeepHolder;
 use NeiroNetwork\AlternativeCoreWars\core\Game;
 use NeiroNetwork\AlternativeCoreWars\core\Lobby;
 use NeiroNetwork\AlternativeCoreWars\core\NoDeathScreenSystem;
@@ -45,6 +46,7 @@ class Main extends PluginBase{
 			BlockReformSystem::class,
 			NoDeathScreenSystem::class,
 			SoulboundItemMonitor::class,
+			EnderChestInventoryKeepHolder::class,
 		]);
 	}
 

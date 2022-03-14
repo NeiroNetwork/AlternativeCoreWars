@@ -7,6 +7,7 @@ namespace NeiroNetwork\AlternativeCoreWars\core;
 use NeiroNetwork\AlternativeCoreWars\block\DoubleTallGrass;
 use NeiroNetwork\AlternativeCoreWars\block\Leaves;
 use NeiroNetwork\AlternativeCoreWars\block\TallGrass;
+use NeiroNetwork\AlternativeCoreWars\block\Wheat;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
@@ -127,6 +128,7 @@ class ServerSpecificationNormalizer extends SubPluginBase implements Listener{
 		$register(DoubleTallGrass::class, VanillaBlocks::LARGE_FERN());
 		$register(Leaves::class, VanillaBlocks::OAK_LEAVES(), [TreeType::OAK()]);
 		$register(Leaves::class, VanillaBlocks::DARK_OAK_LEAVES(), [TreeType::DARK_OAK()]);
+		$register(Wheat::class, VanillaBlocks::WHEAT());
 	}
 
 	public function onWorldLoad(WorldLoadEvent $event) : void{
