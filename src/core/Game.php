@@ -10,6 +10,7 @@ use NeiroNetwork\AlternativeCoreWars\constants\BroadcastChannels;
 use NeiroNetwork\AlternativeCoreWars\constants\Teams;
 use NeiroNetwork\AlternativeCoreWars\constants\Translations;
 use NeiroNetwork\AlternativeCoreWars\core\subs\Arena;
+use NeiroNetwork\AlternativeCoreWars\core\subs\ArenaData;
 use NeiroNetwork\AlternativeCoreWars\core\subs\GameQueue;
 use NeiroNetwork\AlternativeCoreWars\event\GameEndEvent;
 use NeiroNetwork\AlternativeCoreWars\event\GameFinishEvent;
@@ -39,54 +40,70 @@ use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\utils\TextFormat;
 use pocketmine\world\sound\ExplodeSound;
+use pocketmine\world\World;
 
 class Game extends SubPluginBase implements Listener{
 
 	private const GAME_TIME_TABLE = [600, 900, 1200, 1800, PHP_INT_MAX];
 
-	private static self $instance;	// FIXME: 静的関数からアクセスするために使うけど、いろいろと(主に設計が)破綻している気がする
-	private static ?Arena $arena = null;
-	private static bool $running = false;
+	private static self $instance;
 
-	public static function getArena() : ?Arena{
-		return self::$arena;
+	public static function getInstance() : self{
+		return self::$instance;
 	}
 
-	public static function isRunning() : bool{
-		return self::$running;
+	private bool $running = false;
+
+	private ?Arena $arena = null;
+
+	private int $phase = 0;
+	private int $time = 0;
+	/** @var int[] */
+	private array $nexus = [Teams::RED => 100, Teams::BLUE => 100];
+
+	public function isRunning() : bool{
+		return $this->running;
 	}
 
-	public static function preGame(GameQueue $queue, Arena $arena) : void{
+	public function getArena() : ?ArenaData{
+		return $this->arena?->getData();
+	}
+
+	public function getWorld() : ?World{
+		return $this->arena?->getWorld();
+	}
+
+	public function preGame(GameQueue $queue, Arena $arena) : void{
 		// FIXME: ゲーム変数の初期化はここで良い？
-		self::$instance->phase = 0;
-		self::$instance->time = 0;
-		self::$instance->nexus = [Teams::RED => 100, Teams::BLUE => 100];
+		$this->phase = 0;
+		$this->time = 0;
+		$this->nexus = [Teams::RED => 100, Teams::BLUE => 100];
 
-		self::$arena = $arena;
+		$this->arena = $arena;
 
 		$queue->shuffle();
 		foreach($queue as $player){
-			self::initialJoin($player);
+			$this->initialJoin($player);
 		}
 
-		self::$instance->getScheduler()->scheduleRepeatingTask(new ClosureTask(\Closure::fromCallable([self::$instance, "onMainGameTick"])), 20);
-		self::$running = true;
-		(new GameStartEvent())->call();
+		$this->getScheduler()->scheduleRepeatingTask(new ClosureTask(\Closure::fromCallable([$this, "onMainGameTick"])), 20);
+		$this->running = true;
+		(new GameStartEvent($this))->call();
 	}
 
-	public static function initialJoin(Player $player) : void{
+	public function initialJoin(Player $player) : void{
 		TeamReferee::randomJoin($player);
 		Broadcast::message(Translations::JOINED_TEAM(TeamReferee::getTeam($player)), [$player]);
-		self::spawnInGame($player);
+		$this->spawnInGame($player);
 	}
 
-	private static function spawnInGame(Player $player) : void{
+	private function spawnInGame(Player $player) : void{
 		PlayerUtils::resetAllStates($player);
 
 		$team = TeamReferee::getTeam($player);
 		$player->setNameTag(Teams::textColor($team) . $player->getName() . TextFormat::RESET);
 		$player->setDisplayName(Teams::textColor($team) . $player->getName() . TextFormat::RESET);
-		$player->teleport(reset(self::$arena->getData()->getSpawns()[$team]));
+		$player->teleport(reset($this->getArena()->getSpawns()[$team]));
 
 		// TODO: give items (Kits との連携)
 		{
@@ -108,31 +125,26 @@ class Game extends SubPluginBase implements Listener{
 		$player->setGamemode(GameMode::SURVIVAL());
 	}
 
-	public static function postGame(?string $victor = null) : void{
-		self::$instance->getScheduler()->cancelAllTasks();
-		self::$running = false;
-		(new GameEndEvent($victor))->call();
+	public function postGame(?string $victor = null) : void{
+		$this->getScheduler()->cancelAllTasks();
+		$this->running = false;
+		(new GameEndEvent($this, $victor))->call();
 	}
 
-	private static function cleanUp() : void{
-		(new GameFinishEvent())->call();
+	private function cleanUp() : void{
+		(new GameFinishEvent($this))->call();
 
 		TeamReferee::reset();
 
-		foreach(self::$arena->getWorld()->getPlayers() as $player){
+		foreach($this->getWorld()->getPlayers() as $player){
 			Lobby::teleportToLobby($player);
 		}
 
-		self::$arena = null;
+		$this->arena = null;
 	}
 
-	private int $phase = 0;
-	private int $time = 0;
-	/** @var int[] */
-	private array $nexus = [Teams::RED => 100, Teams::BLUE => 100];
-
 	private function onMainGameTick() : void{
-		if(!self::isRunning()) return;
+		if(!$this->isRunning()) return;
 
 		$this->displaySidebarStatus();
 
@@ -141,8 +153,8 @@ class Game extends SubPluginBase implements Listener{
 			$this->time = 0;
 
 			// TODO: フェーズ移行時の演出
-			Broadcast::message(Translations::START_NEW_PHASE($this->phase + 1), self::$arena->getWorld()->getPlayers());
-			Broadcast::sound("mob.wither.spawn", recipients: self::$arena->getWorld()->getPlayers());
+			Broadcast::message(Translations::START_NEW_PHASE($this->phase + 1), $this->getWorld()->getPlayers());
+			Broadcast::sound("mob.wither.spawn", recipients: $this->getWorld()->getPlayers());
 		}
 	}
 
@@ -151,7 +163,7 @@ class Game extends SubPluginBase implements Listener{
 		$time = Utilities::humanReadableTime(self::GAME_TIME_TABLE[$this->phase] - $this->time);
 		$nexus = implode(", ", $this->nexus);
 
-		Broadcast::tip("Phase $phase | $time\n$nexus", self::$arena->getWorld()->getPlayers());
+		Broadcast::tip("Phase $phase | $time\n$nexus", $this->getWorld()->getPlayers());
 	}
 
 	protected function onLoad() : void{
@@ -162,8 +174,21 @@ class Game extends SubPluginBase implements Listener{
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 	}
 
+	public function onDamage(EntityDamageEvent $event) : void{
+		$player = $event->getEntity();
+		if(!$player instanceof Player || $player->getWorld() !== $this->getWorld()) return;
+		if(!$this->isRunning()){
+			$event->cancel();
+			if($event->getCause() === EntityDamageEvent::CAUSE_VOID){
+				$this->spawnInGame($player);
+			}
+		}
+	}
+
 	public function onDeath(PlayerDeathWithoutDeathScreenEvent $event) : void{
 		$player = $event->getPlayer();
+		if($player->getWorld() !== $this->getWorld()) return;
+
 		Broadcast::title(Translations::YOU_DIED(), " ", recipients: [$player]);
 		$player->getEffects()->add(new EffectInstance(VanillaEffects::BLINDNESS(), 30, visible: false));
 
@@ -180,6 +205,8 @@ class Game extends SubPluginBase implements Listener{
 	}
 
 	public function onGameEnd(GameEndEvent $event) : void{
+		// FIXME: Game内にいるのだからイベントをリスニングするのは違うのでは？ (そのまま関数を呼び出せばいいのでは)
+
 		/** @var Fireworks $fireworks */
 		$fireworks = ItemFactory::getInstance()->get(ItemIds::FIREWORKS);
 		$fireworks->addExplosion(Fireworks::TYPE_SMALL_SPHERE,
@@ -194,7 +221,7 @@ class Game extends SubPluginBase implements Listener{
 			$players = match($victor){
 				Teams::RED => TeamReferee::getTeams(Teams::RED),
 				Teams::BLUE => TeamReferee::getTeams(Teams::BLUE),
-				default => Game::$arena->getWorld()->getPlayers(),
+				default => $this->getWorld()->getPlayers(),
 			};
 
 			for($i = 0; $i < 2; ++$i){
@@ -206,11 +233,11 @@ class Game extends SubPluginBase implements Listener{
 		for($i = 0; $i < 9; ++$i){
 			$this->getScheduler()->scheduleDelayedTask(new ClosureTask($endPerformance), 20 * $i);
 		}
-		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(fn() => self::cleanUp()), 20 * 10);
+		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(fn() => $this->cleanUp()), 20 * 10);
 	}
 
 	public function onExhaust(PlayerExhaustEvent $event) : void{
-		if($event->getPlayer()?->getWorld() === self::$arena?->getWorld()){
+		if($event->getPlayer()?->getWorld() === $this->getWorld()){
 			$event->setAmount($event->getAmount() * (mt_rand(50, 75) / 100));
 		}
 	}
@@ -221,10 +248,10 @@ class Game extends SubPluginBase implements Listener{
 	public function onBreakNexus(BlockBreakEvent $event) : void{
 		$player = $event->getPlayer();
 		$breaker = TeamReferee::getTeam($player);
-		if(!$event->isCancelled() || !$player->isSurvival(true) || $breaker === null) return;
+		if(!$this->isRunning() || !$event->isCancelled() || !$player->isSurvival(true) || $breaker === null) return;
 
 		$isNexusBroken = false;
-		foreach(Game::$arena->getData()->getNexuses() as $team => $position){
+		foreach($this->getArena()->getNexuses() as $team => $position){
 			if($event->getBlock()->getPosition()->equals($position)){
 				if($breaker === $team){
 					Broadcast::message(Translations::DESTROY_ALLY_NEXUS(), [$player]);
@@ -237,7 +264,7 @@ class Game extends SubPluginBase implements Listener{
 		}
 		if(!$isNexusBroken) return;
 
-		$ev = new NexusDamageEvent($team, $this->phase >= 3 ? 2 : 1, $player);
+		$ev = new NexusDamageEvent($this, $team, $this->phase >= 3 ? 2 : 1, $player);
 		if($this->phase <= 0){
 			$ev->cancel();
 			Broadcast::message(Translations::CANNOT_DESTROY_NEXUS(), [$player]);
@@ -275,7 +302,7 @@ class Game extends SubPluginBase implements Listener{
 
 		$aliveTeams = array_filter($this->nexus, fn($health) => $health > 0);
 		if(count($aliveTeams) === 1){
-			self::postGame(array_key_first($aliveTeams));
+			$this->postGame(array_key_first($aliveTeams));
 		}
 	}
 }

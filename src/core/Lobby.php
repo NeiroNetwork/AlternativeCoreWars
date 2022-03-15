@@ -60,7 +60,7 @@ class Lobby extends SubPluginBase implements Listener{
 	}
 
 	private function onTick() : void{
-		if(Game::getArena() !== null) return;
+		if(Game::getInstance()->getWorld() !== null) return;
 
 		$players = $this->getServer()->getWorldManager()->getDefaultWorld()->getPlayers();
 		if(count($this->queue) < self::MIN_PLAYER){
@@ -68,13 +68,10 @@ class Lobby extends SubPluginBase implements Listener{
 			Broadcast::tip(Translations::WAITING_FOR_PLAYERS(), $players);
 		}else{
 			Broadcast::tip(Translations::GAME_STARTS_IN($this->voteTime--), $players);
-			if(Game::getArena() !== null){
-				$this->voteTime++;
-			}
 		}
 
 		if($this->voteTime === -1){
-			Game::preGame($this->queue, new Arena(array_rand(Arena::getArenaList())));
+			Game::getInstance()->preGame($this->queue, new Arena(array_rand(Arena::getArenaList())));
 			$this->queue->reset();
 		}
 	}
@@ -92,7 +89,7 @@ class Lobby extends SubPluginBase implements Listener{
 
 		$item = $event->getItem();
 		if($item->equals(Items::QUEUE_COMPASS())){
-			Game::isRunning() ? Game::initialJoin($player) : $this->queue->add($player);
+			Game::getInstance()->isRunning() ? Game::getInstance()->initialJoin($player) : $this->queue->add($player);
 		}
 	}
 

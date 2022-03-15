@@ -11,8 +11,6 @@ use NeiroNetwork\AlternativeCoreWars\block\Wheat;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
-use pocketmine\block\BlockIdentifier;
-use pocketmine\block\UnknownBlock;
 use pocketmine\block\utils\TreeType;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\event\entity\ItemMergeEvent;
@@ -44,9 +42,9 @@ class ServerSpecificationNormalizer extends SubPluginBase implements Listener{
 	private function normalizeServerSettings() : void{
 		$group = $this->getServer()->getConfigGroup();
 
-		$group->setConfigBool("auto-save", false);
+		$group->setConfigString("auto-save", "off");
 		$group->setConfigString("gamemode", GameMode::ADVENTURE()->name());
-		$group->setConfigBool("pvp", true);
+		$group->setConfigString("pvp", "on");
 
 		$propertyCache = (new \ReflectionClass($group))->getProperty("propertyCache");
 		$propertyCache->setAccessible(true);

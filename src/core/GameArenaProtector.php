@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace NeiroNetwork\AlternativeCoreWars\core;
 
-use NeiroNetwork\AlternativeCoreWars\event\GameEndEvent;
+use NeiroNetwork\AlternativeCoreWars\event\GameFinishEvent;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use pocketmine\block\CraftingTable;
 use pocketmine\block\Flowable;
@@ -37,7 +37,7 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 	}
 
-	public function onGameEnd(GameEndEvent $event) : void{
+	public function onGameFinish(GameFinishEvent $event) : void{
 		$this->getScheduler()->cancelAllTasks();
 	}
 
@@ -47,9 +47,14 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 	public function onBlockBreak(BlockBreakEvent $event) : void{
 		if($event->getPlayer()->isCreative(true)) return;
 		$position = $event->getBlock()->getPosition();
-		if(Game::getArena()?->getWorld() !== $position->getWorld()) return;
+		if(Game::getInstance()->getWorld() !== $position->getWorld()) return;
 
-		foreach(Game::getArena()->getData()->getStrictProtections() as $protection){
+		if(!Game::getInstance()->isRunning()){
+			$event->cancel();
+			return;
+		}
+
+		foreach(Game::getInstance()->getArena()->getStrictProtections() as $protection){
 			if($protection->isVectorInside($position)){
 				$event->cancel();
 				break;
@@ -63,14 +68,14 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 	public function onBlockBreak2(BlockBreakEvent $event) : void{
 		if($event->getPlayer()->isCreative(true)) return;
 		$position = $event->getBlock()->getPosition();
-		if(Game::getArena()?->getWorld() !== $position->getWorld()) return;
+		if(Game::getInstance()->getWorld() !== $position->getWorld()) return;
 
 		if(
 			isset($event->bypassBlockBreakProtector) ||
 			($event->getBlock() instanceof Flowable && count($event->getBlock()->getCollisionBoxes()) === 0)
 		) return;
 
-		foreach(Game::getArena()->getData()->getLenientProtections() as $protection){
+		foreach(Game::getInstance()->getArena()->getLenientProtections() as $protection){
 			if($protection->isVectorInside($position)){
 				$event->cancel();
 				break;
@@ -86,7 +91,7 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 		$player = $event->getPlayer();
 		if(
 			!$player->isCreative() &&
-			Game::getArena()?->getWorld() === $player->getWorld() &&
+			Game::getInstance()->getWorld() === $player->getWorld() &&
 			$event->isCancelled() &&
 			count($event->getBlock()->getCollisionBoxes()) !== 0
 		){
@@ -100,9 +105,14 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 	public function onBlockPlace(BlockPlaceEvent $event) : void{
 		if($event->getPlayer()->isCreative(true)) return;
 		$position = $event->getBlock()->getPosition();
-		if(Game::getArena()?->getWorld() !== $position->getWorld()) return;
+		if(Game::getInstance()->getWorld() !== $position->getWorld()) return;
 
-		foreach(Game::getArena()->getData()->getAllProtections() as $protection){
+		if(!Game::getInstance()->isRunning()){
+			$event->cancel();
+			return;
+		}
+
+		foreach(Game::getInstance()->getArena()->getAllProtections() as $protection){
 			if($protection->isVectorInside($position)){
 				$event->cancel();
 				$this->preventGlitches($event->getPlayer());
@@ -117,9 +127,14 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 	public function onBucketFill(PlayerBucketFillEvent $event) : void{
 		if($event->getPlayer()->isCreative(true)) return;
 		$position = $event->getBlockClicked()->getPosition();
-		if(Game::getArena()?->getWorld() !== $position->getWorld()) return;
+		if(Game::getInstance()->getWorld() !== $position->getWorld()) return;
 
-		foreach(Game::getArena()->getData()->getAllProtections() as $protection){
+		if(!Game::getInstance()->isRunning()){
+			$event->cancel();
+			return;
+		}
+
+		foreach(Game::getInstance()->getArena()->getAllProtections() as $protection){
 			if($protection->isVectorInside($position)){
 				$event->cancel();
 				break;
@@ -133,9 +148,14 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 	public function onBucketEmpty(PlayerBucketEmptyEvent $event) : void{
 		if($event->getPlayer()->isCreative(true)) return;
 		$position = $event->getBlockClicked()->getPosition();
-		if(Game::getArena()?->getWorld() !== $position->getWorld()) return;
+		if(Game::getInstance()->getWorld() !== $position->getWorld()) return;
 
-		foreach(Game::getArena()->getData()->getAllProtections() as $protection){
+		if(!Game::getInstance()->isRunning()){
+			$event->cancel();
+			return;
+		}
+
+		foreach(Game::getInstance()->getArena()->getAllProtections() as $protection){
 			if($protection->isVectorInside($position)){
 				$event->cancel();
 				break;
@@ -149,13 +169,13 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 	public function onInteract(PlayerInteractEvent $event) : void{
 		if($event->getPlayer()->isCreative(true)) return;
 		$position = $event->getBlock()->getPosition();
-		if(Game::getArena()?->getWorld() !== $position->getWorld()) return;
+		if(Game::getInstance()->getWorld() !== $position->getWorld()) return;
 
 		if($event->getAction() === PlayerInteractEvent::RIGHT_CLICK_BLOCK){
 			$item = $event->getItem();
 			if(!($item instanceof Tool || $item instanceof Fertilizer)) return;
 
-			foreach(Game::getArena()->getData()->getAllProtections() as $protection){
+			foreach(Game::getInstance()->getArena()->getAllProtections() as $protection){
 				if($protection->isVectorInside($position)){
 					$event->cancel();
 
@@ -179,12 +199,17 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 	public function onStructureGrow(StructureGrowEvent $event) : void{
 		if($event->getPlayer()?->isCreative(true)) return;
 		$world = $event->getBlock()->getPosition()->getWorld();
-		if(Game::getArena()?->getWorld() !== $world) return;
+		if(Game::getInstance()->getWorld() !== $world) return;
+
+		if(!Game::getInstance()->isRunning()){
+			$event->cancel();
+			return;
+		}
 
 		$position = new Position(0, 0, 0, $world);
 		foreach($event->getTransaction()->getBlocks() as [$x, $y, $z, $block]){
 			$position->x = $x; $position->y = $y; $position->z = $z;
-			foreach(Game::getArena()->getData()->getAllProtections() as $protection){
+			foreach(Game::getInstance()->getArena()->getAllProtections() as $protection){
 				if($protection->isVectorInside($position)){
 					$event->cancel();
 					return;

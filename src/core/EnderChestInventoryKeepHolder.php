@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace NeiroNetwork\AlternativeCoreWars\core;
 
-use NeiroNetwork\AlternativeCoreWars\event\GameEndEvent;
+use NeiroNetwork\AlternativeCoreWars\event\GameFinishEvent;
 use NeiroNetwork\AlternativeCoreWars\event\GameStartEvent;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use pocketmine\entity\Human;
@@ -34,7 +34,7 @@ class EnderChestInventoryKeepHolder extends SubPluginBase implements Listener{
 		$this->inventoryContents = [];
 	}
 
-	public function onGameEnd(GameEndEvent $event) : void{
+	public function onGameFinish(GameFinishEvent $event) : void{
 		$this->inventoryContents = [];
 	}
 

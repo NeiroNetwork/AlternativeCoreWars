@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace NeiroNetwork\AlternativeCoreWars\core;
 
 use NeiroNetwork\AlternativeCoreWars\core\subs\BlockReformOption;
-use NeiroNetwork\AlternativeCoreWars\event\GameEndEvent;
+use NeiroNetwork\AlternativeCoreWars\event\GameFinishEvent;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use pocketmine\data\bedrock\LegacyBlockIdToStringIdMap;
 use pocketmine\event\block\BlockBreakEvent;
@@ -31,7 +31,8 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 		if($event->getInstaBreak()) return;		// クリエイティブでない
 
 		$position = ($block = $event->getBlock())->getPosition();
-		if(Game::getArena()->getWorld() !== ($world = $position->getWorld())) return;	// ゲームワールド内である
+		$world = $position->getWorld();
+		if(Game::getInstance()->getWorld() !== $world) return;	// ゲームワールド内である
 
 		if(PlayerBlockTracker::exists($position)) return;	// プレイヤーが置いたブロックではない
 
@@ -64,7 +65,7 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 	}
 	}
 
-	public function onGameEnd(GameEndEvent $event) : void{
+	public function onGameFinish(GameFinishEvent $event) : void{
 		$this->getScheduler()->cancelAllTasks();
 	}
 

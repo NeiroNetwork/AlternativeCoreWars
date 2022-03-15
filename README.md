@@ -40,3 +40,8 @@
 ### EnderChestInventoryKeepHolder
 (TODO: まだできてない)<br>
 `ServerSpecificationNormalizer` でプレイヤーデータの保存を無効化しているので、これがエンダーチェストの中身を保持する役割を担っている
+
+## 他のプラグインと共存させる
+### `BlockBreakEvent`
+ワールドの保護や復活するブロックの判定で `LOWEST`, `LOW`, `NORMAL` を使っている。  
+正常に `BlockBreakEvent` を処理したい場合は重要度は `HIGH` 以上にしなければならない。

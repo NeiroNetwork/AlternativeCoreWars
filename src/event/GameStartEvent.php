@@ -6,5 +6,5 @@ namespace NeiroNetwork\AlternativeCoreWars\event;
 
 use pocketmine\event\Event;
 
-class GameStartEvent extends Event{
+class GameStartEvent extends GameEvent{
 }
