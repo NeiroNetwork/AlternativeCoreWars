@@ -70,7 +70,7 @@ class Lobby extends SubPluginBase implements Listener{
 			Broadcast::tip(Translations::GAME_STARTS_IN($this->voteTime--), $players);
 		}
 
-		if($this->voteTime === -1){
+		if($this->voteTime < 0){
 			Game::getInstance()->preGame($this->queue, new Arena(array_rand(Arena::getArenaList())));
 			$this->queue->reset();
 		}
