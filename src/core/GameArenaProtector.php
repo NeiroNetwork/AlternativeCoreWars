@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NeiroNetwork\AlternativeCoreWars\core;
 
+use NeiroNetwork\AlternativeCoreWars\constants\ProtectionType;
 use NeiroNetwork\AlternativeCoreWars\event\GameFinishEvent;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use pocketmine\block\CraftingTable;
@@ -46,7 +47,7 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 	 */
 	public function onBlockBreak(BlockBreakEvent $event) : void{
 		if($event->getPlayer()->isCreative(true)) return;
-		$position = $event->getBlock()->getPosition();
+		$position = ($block = $event->getBlock())->getPosition();
 		if(Game::getInstance()->getWorld() !== $position->getWorld()) return;
 
 		if(!Game::getInstance()->isRunning()){
@@ -57,28 +58,18 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 		foreach(Game::getInstance()->getArena()->getStrictProtections() as $protection){
 			if($protection->isVectorInside($position)){
 				$event->cancel();
-				break;
+				$event->protectionType = ProtectionType::STRICT;	// HACK: BlockReformSystemで使う…
+				return;
 			}
 		}
-	}
 
-	/**
-	 * @priority NORMAL
-	 */
-	public function onBlockBreak2(BlockBreakEvent $event) : void{
-		if($event->getPlayer()->isCreative(true)) return;
-		$position = $event->getBlock()->getPosition();
-		if(Game::getInstance()->getWorld() !== $position->getWorld()) return;
-
-		if(
-			isset($event->bypassBlockBreakProtector) ||
-			($event->getBlock() instanceof Flowable && count($event->getBlock()->getCollisionBoxes()) === 0)
-		) return;
+		if($block instanceof Flowable && count($block->getCollisionBoxes()) === 0) return;
 
 		foreach(Game::getInstance()->getArena()->getLenientProtections() as $protection){
 			if($protection->isVectorInside($position)){
 				$event->cancel();
-				break;
+				$event->protectionType = ProtectionType::LENIENT;	// HACK: BlockReformSystemで使う…
+				return;
 			}
 		}
 	}

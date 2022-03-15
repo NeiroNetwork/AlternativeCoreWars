@@ -161,6 +161,7 @@ class Game extends SubPluginBase implements Listener{
 	private function displaySidebarStatus() : void{
 		$phase = $this->phase + 1;
 		$time = Utilities::humanReadableTime(self::GAME_TIME_TABLE[$this->phase] - $this->time);
+		if($phase === count(self::GAME_TIME_TABLE)) $time = "--:--";	// FIXME: うーん…？
 		$nexus = implode(", ", $this->nexus);
 
 		Broadcast::tip("Phase $phase | $time\n$nexus", $this->getWorld()->getPlayers());
@@ -190,7 +191,7 @@ class Game extends SubPluginBase implements Listener{
 		if($player->getWorld() !== $this->getWorld()) return;
 
 		Broadcast::title(Translations::YOU_DIED(), " ", recipients: [$player]);
-		$player->getEffects()->add(new EffectInstance(VanillaEffects::BLINDNESS(), 30, visible: false));
+		//$player->getEffects()->add(new EffectInstance(VanillaEffects::BLINDNESS(), 30, visible: false));
 
 		if($player->getLastDamageCause()->getCause() === EntityDamageEvent::CAUSE_VOID){
 			$player->teleport($player->getPosition()->add(0, $player->getFallDistance(), 0));
@@ -224,8 +225,9 @@ class Game extends SubPluginBase implements Listener{
 				default => $this->getWorld()->getPlayers(),
 			};
 
-			for($i = 0; $i < 2; ++$i){
-				$random = $players[array_rand($players)];
+			$randomKeys = array_rand($players, (int) ceil(count($players) / 2));
+			foreach(is_array($randomKeys) ? $randomKeys : [$randomKeys] as $key){
+				$random = $players[$key];
 				$location = Location::fromObject($random->getPosition(), $random->getWorld(), lcg_value() * 360, 90);
 				(new FireworksRocket($location, $fireworks))->spawnToAll();
 			}
@@ -244,6 +246,7 @@ class Game extends SubPluginBase implements Listener{
 
 	/**
 	 * @handleCancelled
+	 * @priority HIGH
 	 */
 	public function onBreakNexus(BlockBreakEvent $event) : void{
 		$player = $event->getPlayer();
@@ -280,7 +283,6 @@ class Game extends SubPluginBase implements Listener{
 		$event->uncancel();
 		$event->setDrops([]);
 		$event->setXpDropAmount(0);
-		$event->bypassBlockBreakProtector = true;
 
 		$block = $event->getBlock();
 		$position = $block->getPosition();

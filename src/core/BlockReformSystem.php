@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NeiroNetwork\AlternativeCoreWars\core;
 
+use NeiroNetwork\AlternativeCoreWars\constants\ProtectionType;
 use NeiroNetwork\AlternativeCoreWars\core\subs\BlockReformOption;
 use NeiroNetwork\AlternativeCoreWars\event\GameFinishEvent;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
@@ -25,9 +26,13 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 	}
 
 	/**
+	 * @handleCancelled
 	 * @priority LOW
 	 */
 	public function onBlockBreak(BlockBreakEvent $event) : void{
+		// 緩い保護あるいはキャンセルされていないイベントである
+		if($event->isCancelled() && (!isset($event->protectionType) || $event->protectionType !== ProtectionType::LENIENT)) return;
+
 		if($event->getInstaBreak()) return;		// クリエイティブでない
 
 		$position = ($block = $event->getBlock())->getPosition();
@@ -42,6 +47,9 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 			if($block->getId() === 1 && $block->getMeta() !== 0) return;	// HACK: 純粋な石のみ
 
 			$option = $this->reformableBlocks[$stringId];
+
+			if($option->isProtectionAreaOnly() && !isset($event->protectionType)) return;
+
 			$this->getScheduler()->scheduleDelayedTask(new ClosureTask(
 				fn() => $world->setBlock($position, $option->getBlock(), false)
 			), 1);
@@ -54,15 +62,14 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 				$world->addSound($center, new PopSound());
 			}), mt_rand($option->getMinTick(), $option->getMaxTick()));
 
+			$event->uncancel();
+
 			$player = $event->getPlayer();
 			foreach($event->getDrops() as $dropItem) $player->getInventory()->addItem($dropItem);
 			$event->setDrops([]);
-			$player->getXpManager()->addXp($event->getXpDropAmount() * $option->getXpBoost());
+			$player->getXpManager()->addXp(($event->getXpDropAmount() + $option->getBaseXp()) * $option->getXpBoost());
 			$event->setXpDropAmount(0);
-
-			// HACK: GameArenaProtectorで資源ブロックを壊したかどうかを判定する
-			$event->bypassBlockBreakProtector = true;
-	}
+		}
 	}
 
 	public function onGameFinish(GameFinishEvent $event) : void{
@@ -94,7 +101,7 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 		$add("copper_ore", new BlockReformOption(29, 32, "cobblestone"));
 		$add("deepslate_copper_ore", new BlockReformOption(29, 32, "cobbled_deepslate"));
 
-		$add("stone", new BlockReformOption(19, 23));
+		$add("stone", new BlockReformOption(19, 23, protection: true));
 		$add("deepslate", new BlockReformOption(19, 23));
 		$add("log", new BlockReformOption(17, 23));
 		$add("log2", clone $get("log"));
@@ -112,5 +119,7 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 		$add("wheat", new BlockReformOption(21, 31));
 		$add("potatoes", clone $get("wheat"));
 		$add("carrots", clone $get("wheat"));
+
+		$add("leaves", new BlockReformOption(18, 24, protection: true));
 	}
 }
