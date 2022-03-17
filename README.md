@@ -21,7 +21,6 @@
 - スペクテイターの自殺と奈落ダメージの無効化
 - プレイヤーが死んだ場合 `PlayerDeathEvent` の代わりに `PlayerDeathWihtoutDeathScreenEvent` を呼び出す
 - `PlayerRespawnEvent` は基本的には呼び出されない
-- :warning: `(PlayerDeathEvent)->setKeepInventory()` は機能しない (`PlayerUtils::resetAllStatus()` を呼び出しているため)
 
 ### SoulboundItemMonitor
 - `InventoryTransactionEvent` を監視して `SlotChangeAction`, `DropItemAction` の二つを偽のアクションへ置き換える
