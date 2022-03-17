@@ -43,6 +43,7 @@ use pocketmine\world\World;
 class Game extends SubPluginBase implements Listener{
 
 	private const GAME_TIME_TABLE = [600, 900, 1200, 1800, PHP_INT_MAX];
+	private const NEXUS_DAMAGES = [0, 1, 1, 2, 2];
 
 	private static self $instance;
 
@@ -69,6 +70,10 @@ class Game extends SubPluginBase implements Listener{
 
 	public function getWorld() : ?World{
 		return $this->arena?->getWorld();
+	}
+
+	public function getPhase() : int{
+		return $this->phase;
 	}
 
 	public function preGame(GameQueue $queue, Arena $arena) : void{
@@ -132,6 +137,8 @@ class Game extends SubPluginBase implements Listener{
 	private function cleanUp() : void{
 		(new GameFinishEvent($this))->call();
 
+		$this->getScheduler()->cancelAllTasks();
+
 		TeamReferee::reset();
 
 		foreach($this->getWorld()->getPlayers() as $player){
@@ -157,6 +164,7 @@ class Game extends SubPluginBase implements Listener{
 	}
 
 	private function displaySidebarStatus() : void{
+		// TODO: ボスバーに表示させるようにする
 		$phase = $this->phase + 1;
 		$time = Utilities::humanReadableTime(self::GAME_TIME_TABLE[$this->phase] - $this->time);
 		if($phase === count(self::GAME_TIME_TABLE)) $time = "--:--";	// FIXME: うーん…？
@@ -251,22 +259,21 @@ class Game extends SubPluginBase implements Listener{
 		$breaker = TeamReferee::getTeam($player);
 		if(!$this->isRunning() || !$event->isCancelled() || !$player->isSurvival(true) || $breaker === null) return;
 
+		$block = $event->getBlock();
 		$isNexusBroken = false;
 		foreach($this->getArena()->getNexuses() as $team => $position){
-			if($event->getBlock()->getPosition()->equals($position)){
-				if($breaker === $team){
+			if($block->getPosition()->equals($position)){
+				if(!$isNexusBroken = $breaker !== $team){
 					Broadcast::message(Translations::DESTROY_ALLY_NEXUS(), [$player]);
 					Broadcast::sound("note.bass", recipients: [$player]);
-				}else{
-					$isNexusBroken = true;
 				}
 				break;
 			}
 		}
-		if(!$isNexusBroken) return;
+		if(!$isNexusBroken || $this->nexus[$team] <= 0) return;
 
-		$ev = new NexusDamageEvent($this, $team, $this->phase >= 3 ? 2 : 1, $player);
-		if($this->phase <= 0){
+		$ev = new NexusDamageEvent($this, $team, self::NEXUS_DAMAGES[$this->phase], $player);
+		if($ev->getDamage() <= 0){
 			$ev->cancel();
 			Broadcast::message(Translations::CANNOT_DESTROY_NEXUS(), [$player]);
 			Broadcast::sound("note.bass", recipients: [$player]);
@@ -282,27 +289,22 @@ class Game extends SubPluginBase implements Listener{
 		$event->setDrops([]);
 		$event->setXpDropAmount(0);
 
-		$block = $event->getBlock();
 		$position = $block->getPosition();
-		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(
-			fn() => $position->getWorld()->setBlock($block->getPosition(), $block, false)
-		), 1);
+		$isTeamDied = $this->nexus[$ev->getTeam()] <= 0;
 
 		// TODO: メッセージなど送信
 		// TODO: ネクサス破壊の演出
 		Broadcast::sound("note.harp", pitch: 1.6, recipients: BroadcastChannels::fromTeam($ev->getTeam()));
-		$sound = $this->nexus[$ev->getTeam()] > 0 ? new NexusDestroySound() : new ExplodeSound();
-		$position->getWorld()->addSound($position->add(0.5, 0.5, 0.5), $sound);
-
-		if($this->nexus[$ev->getTeam()] <= 0){
-			$this->getScheduler()->scheduleDelayedTask(new ClosureTask(fn() =>
-				$position->getWorld()->setBlock($position, VanillaBlocks::BEDROCK(), false)
-			), 1);
-		}
+		$position->getWorld()->addSound($position->add(0.5, 0.5, 0.5), $isTeamDied ? new ExplodeSound() : new NexusDestroySound());
 
 		$aliveTeams = array_filter($this->nexus, fn($health) => $health > 0);
 		if(count($aliveTeams) === 1){
 			$this->postGame(array_key_first($aliveTeams));
 		}
+
+		// ブロックは設置させたいので postGame() より後に実行する
+		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(
+			fn() => $position->getWorld()->setBlock($position, $isTeamDied ? VanillaBlocks::BEDROCK() : $block, false)
+		), $isTeamDied ? 1 : 6);
 	}
 }
