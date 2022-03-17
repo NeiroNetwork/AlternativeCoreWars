@@ -43,16 +43,23 @@ class NoDeathScreenSystem extends SubPluginBase implements Listener{
 			$player->setLastDamageCause($event);
 
 			{	/** @see Player::onDeath() */
+				$player->removeCurrentWindow();
+
 				$ev = new PlayerDeathWithoutDeathScreenEvent($player, $player->getDrops(), $player->getXpDropAmount(), null);
 				$ev->call();
 
-				if($ev->getKeepInventory()){
-					$this->getLogger()->warning("PlayerDeathEvent::setKeepInventory() will be ignored!");
+				$location = $player->getLocation();
+
+				if(!$ev->getKeepInventory()){
+					array_map(fn($item) => $player->getWorld()->dropItem($location, $item), $ev->getDrops());
+					$player->getInventory()->setHeldItemIndex(0);
+					$player->getInventory()->clearAll();
+					$player->getArmorInventory()->clearAll();
+					$player->getOffHandInventory()->clearAll();
 				}
 
-				$location = $player->getLocation();
-				array_map(fn($item) => $player->getWorld()->dropItem($location, $item), $ev->getDrops());
 				$player->getWorld()->dropExperience($location, $ev->getXpDropAmount());
+				$player->getXpManager()->setXpAndProgress(0, 0.0);
 
 				if($ev->getDeathMessage() !== ""){
 					$player->getServer()->broadcastMessage($ev->getDeathMessage());
@@ -62,7 +69,6 @@ class NoDeathScreenSystem extends SubPluginBase implements Listener{
 				$player->broadcastAnimation(new DeathAnimation($player), $player->getViewers());
 			}
 
-			PlayerUtils::resetAllStates($player);
 			PlayerUtils::setLimitedSpectator($player);
 		}
 	}
