@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace NeiroNetwork\AlternativeCoreWars;
 
 use NeiroNetwork\AlternativeCoreWars\core\BlockReformSystem;
-use NeiroNetwork\AlternativeCoreWars\core\DisableInvisible;
+use NeiroNetwork\AlternativeCoreWars\core\InvisibilityCancellation;
 use NeiroNetwork\AlternativeCoreWars\core\EnderChestInventoryKeepHolder;
 use NeiroNetwork\AlternativeCoreWars\core\Game;
 use NeiroNetwork\AlternativeCoreWars\core\Lobby;
@@ -48,7 +48,7 @@ class Main extends PluginBase{
 			NoDeathScreenSystem::class,
 			SoulboundItemMonitor::class,
 			EnderChestInventoryKeepHolder::class,
-			DisableInvisible::class,
+			InvisibilityCancellation::class,
 		]);
 	}
 

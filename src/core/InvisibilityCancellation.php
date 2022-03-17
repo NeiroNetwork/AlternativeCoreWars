@@ -12,7 +12,7 @@ use pocketmine\event\Listener;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 
-class DisableInvisible extends SubPluginBase implements Listener{
+class InvisibilityCancellation extends SubPluginBase implements Listener{
 
 	public function onEnable() : void{
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
