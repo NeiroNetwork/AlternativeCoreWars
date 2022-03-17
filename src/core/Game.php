@@ -24,8 +24,6 @@ use NeiroNetwork\AlternativeCoreWars\utils\SoulboundItem;
 use NeiroNetwork\AlternativeCoreWars\utils\Utilities;
 use NeiroNetwork\AlternativeCoreWars\world\NexusDestroySound;
 use pocketmine\block\VanillaBlocks;
-use pocketmine\entity\effect\EffectInstance;
-use pocketmine\entity\effect\VanillaEffects;
 use pocketmine\entity\Location;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\entity\EntityDamageEvent;
