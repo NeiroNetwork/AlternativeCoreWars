@@ -18,7 +18,7 @@ class InvisibilityCancellation extends SubPluginBase implements Listener{
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 	}
 
-	private function removeInvisibility(Player $player){
+	private function removeInvisibility(Player $player) : void{
 		if($player->getGamemode() === GameMode::SURVIVAL()){
 			if($player->getEffects()->has(VanillaEffects::INVISIBILITY())){
 				$player->getEffects()->remove(VanillaEffects::INVISIBILITY());
@@ -26,14 +26,20 @@ class InvisibilityCancellation extends SubPluginBase implements Listener{
 		}
 	}
 
-	public function onEntityDamageByEntity(EntityDamageByEntityEvent $event){
+	/**
+	 * @priority MONITOR
+	 */
+	public function onEntityDamageByEntity(EntityDamageByEntityEvent $event) : void{
 		$player = $event->getEntity();
 		if($player instanceof Player){
 			$this->removeInvisibility($player);
 		}
 	}
 
-	public function onBlockBreak(BlockBreakEvent $event){
+	/**
+	 * @priority MONITOR
+	 */
+	public function onBlockBreak(BlockBreakEvent $event) : void{
 		$this->removeInvisibility($event->getPlayer());
 	}
 }
