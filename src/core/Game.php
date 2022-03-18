@@ -33,6 +33,8 @@ use pocketmine\item\Armor;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
 use pocketmine\item\VanillaItems;
+use pocketmine\network\mcpe\protocol\BossEventPacket;
+use pocketmine\network\mcpe\protocol\types\BossBarColor;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
@@ -42,7 +44,7 @@ use pocketmine\world\World;
 
 class Game extends SubPluginBase implements Listener{
 
-	private const GAME_TIME_TABLE = [600, 900, 1200, 1800, PHP_INT_MAX];
+	private const GAME_TIME_TABLE = [600, 900, 1200, 1800, 1];
 	private const NEXUS_DAMAGES = [0, 1, 1, 2, 2];
 
 	private static self $instance;
@@ -94,6 +96,9 @@ class Game extends SubPluginBase implements Listener{
 		(new GameStartEvent($this))->call();
 	}
 
+	/**
+	 * @internal
+	 */
 	public function initialJoin(Player $player) : void{
 		TeamReferee::randomJoin($player);
 		Broadcast::message(Translations::JOINED_TEAM(TeamReferee::getTeam($player)), [$player]);
@@ -131,7 +136,11 @@ class Game extends SubPluginBase implements Listener{
 	public function postGame(?string $victor = null) : void{
 		$this->getScheduler()->cancelAllTasks();
 		$this->running = false;
-		(new GameEndEvent($this, $victor))->call();
+
+		$ev = new GameEndEvent($this, $victor);
+		$ev->call();
+
+		$this->startGameEndPerformance($ev->getVictor());
 	}
 
 	private function cleanUp() : void{
@@ -151,9 +160,9 @@ class Game extends SubPluginBase implements Listener{
 	private function onMainGameTick() : void{
 		if(!$this->isRunning()) return;
 
-		$this->displaySidebarStatus();
+		$this->displayCurrentGameStatus();
 
-		if($this->time++ >= self::GAME_TIME_TABLE[$this->phase]){
+		if($this->phase + 1 < count(self::GAME_TIME_TABLE) && $this->time++ >= self::GAME_TIME_TABLE[$this->phase]){
 			$this->phase++;
 			$this->time = 0;
 
@@ -163,14 +172,61 @@ class Game extends SubPluginBase implements Listener{
 		}
 	}
 
-	private function displaySidebarStatus() : void{
-		// TODO: ボスバーに表示させるようにする
+	private function displayCurrentGameStatus() : void{
 		$phase = $this->phase + 1;
-		$time = Utilities::humanReadableTime(self::GAME_TIME_TABLE[$this->phase] - $this->time);
-		if($phase === count(self::GAME_TIME_TABLE)) $time = "--:--";	// FIXME: うーん…？
-		$nexus = implode(", ", $this->nexus);
+		$seconds = self::GAME_TIME_TABLE[$this->phase] - $this->time;
+		$time = $phase !== count(self::GAME_TIME_TABLE) ? Utilities::humanReadableTime($seconds) : "--:--";
+		// TODO: ネクサスの体力をより見た目の良い表示に変更する
+		$nexus = implode("   ", array_map(
+			fn(string $team, int $health) : string => Teams::textColor($team) . sprintf("%3d", $health),
+			array_keys($this->nexus), $this->nexus
+		));
 
-		Broadcast::tip("Phase $phase | $time\n$nexus", $this->getWorld()->getPlayers());
+		// FIXME: プレイヤー毎ループは効率が悪いのでは？ (broadcastPacketsなどで一気に送信した方が良さそう)
+		foreach($this->getWorld()->getPlayers() as $player){
+			// FIXME: 毎回表示させるパケットを送るのも効率悪い
+			$player->getNetworkSession()->sendDataPacket(BossEventPacket::show(
+				$player->getId(), "", 1.0,
+				color: match(TeamReferee::getTeam($player)){
+					Teams::RED => BossBarColor::RED,
+					Teams::BLUE => BossBarColor::BLUE,
+					default => BossBarColor::PURPLE,
+				}
+			));
+			$player->getNetworkSession()->sendDataPacket(BossEventPacket::title($player->getId(), "Phase $phase | $time\n\n    $nexus"));
+			$player->getNetworkSession()->sendDataPacket(BossEventPacket::healthPercent($player->getId(), $seconds / self::GAME_TIME_TABLE[$this->phase]));
+		}
+	}
+
+	private function startGameEndPerformance(string $victor) : void{
+		/** @var Fireworks $fireworks */
+		$fireworks = ItemFactory::getInstance()->get(ItemIds::FIREWORKS);
+		$fireworks->addExplosion(Fireworks::TYPE_SMALL_SPHERE,
+			match($victor){
+				Teams::RED => Fireworks::COLOR_RED,
+				Teams::BLUE => Fireworks::COLOR_BLUE,
+				default => Fireworks::COLOR_WHITE,
+			}
+		);
+
+		$endPerformance = function() use ($fireworks, $victor){
+			$players = match($victor){
+				Teams::RED => TeamReferee::getTeams(Teams::RED),
+				Teams::BLUE => TeamReferee::getTeams(Teams::BLUE),
+				default => $this->getWorld()->getPlayers(),
+			};
+
+			$randomKeys = array_rand($players, (int) ceil(count($players) / 2));
+			foreach(is_array($randomKeys) ? $randomKeys : [$randomKeys] as $key){
+				$random = $players[$key];
+				$location = Location::fromObject($random->getPosition(), $random->getWorld(), lcg_value() * 360, 90);
+				(new FireworksRocket($location, $fireworks))->spawnToAll();
+			}
+		};
+		for($i = 0; $i < 9; ++$i){
+			$this->getScheduler()->scheduleDelayedTask(new ClosureTask($endPerformance), 20 * $i);
+		}
+		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(fn() => $this->cleanUp()), 20 * 10);
 	}
 
 	protected function onLoad() : void{
@@ -209,39 +265,6 @@ class Game extends SubPluginBase implements Listener{
 				self::spawnInGame($player);
 			}
 		}), 100);
-	}
-
-	public function onGameEnd(GameEndEvent $event) : void{
-		// FIXME: Game内にいるのだからイベントをリスニングするのは違うのでは？ (そのまま関数を呼び出せばいいのでは)
-
-		/** @var Fireworks $fireworks */
-		$fireworks = ItemFactory::getInstance()->get(ItemIds::FIREWORKS);
-		$fireworks->addExplosion(Fireworks::TYPE_SMALL_SPHERE,
-			match($victor = $event->getVictor()){
-				Teams::RED => Fireworks::COLOR_RED,
-				Teams::BLUE => Fireworks::COLOR_BLUE,
-				default => Fireworks::COLOR_WHITE,
-			}
-		);
-
-		$endPerformance = function() use ($fireworks, $victor){
-			$players = match($victor){
-				Teams::RED => TeamReferee::getTeams(Teams::RED),
-				Teams::BLUE => TeamReferee::getTeams(Teams::BLUE),
-				default => $this->getWorld()->getPlayers(),
-			};
-
-			$randomKeys = array_rand($players, (int) ceil(count($players) / 2));
-			foreach(is_array($randomKeys) ? $randomKeys : [$randomKeys] as $key){
-				$random = $players[$key];
-				$location = Location::fromObject($random->getPosition(), $random->getWorld(), lcg_value() * 360, 90);
-				(new FireworksRocket($location, $fireworks))->spawnToAll();
-			}
-		};
-		for($i = 0; $i < 9; ++$i){
-			$this->getScheduler()->scheduleDelayedTask(new ClosureTask($endPerformance), 20 * $i);
-		}
-		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(fn() => $this->cleanUp()), 20 * 10);
 	}
 
 	public function onExhaust(PlayerExhaustEvent $event) : void{
@@ -283,7 +306,7 @@ class Game extends SubPluginBase implements Listener{
 		if($ev->isCancelled()) return;
 
 		$this->nexus[$ev->getTeam()] -= $ev->getDamage();
-		$this->displaySidebarStatus();
+		$this->displayCurrentGameStatus();
 
 		$event->uncancel();
 		$event->setDrops([]);
