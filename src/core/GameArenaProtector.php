@@ -74,7 +74,7 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 			}
 		}
 
-		if($block instanceof Flowable && count($block->getCollisionBoxes()) === 0 && $block->getLightLevel() === 0) return;
+		if($block instanceof Flowable && empty($block->getCollisionBoxes()) && $block->getLightLevel() === 0) return;
 
 		foreach(Game::getInstance()->getArena()->getLenientProtections() as $protection){
 			if($this->isVectorIntersects($protection, $position)){
@@ -95,7 +95,7 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 			!$player->isCreative() &&
 			Game::getInstance()->getWorld() === $player->getWorld() &&
 			$event->isCancelled() &&
-			count($event->getBlock()->getCollisionBoxes()) !== 0
+			!empty($event->getBlock()->getCollisionBoxes())
 		){
 			$this->preventGlitches($player);
 		}
@@ -194,10 +194,6 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 		}
 	}
 
-	/**
-	 * @priority HIGH
-	 * NOTE: NoWorldCorruptionと競合しないように優先度はHIGHに設定
-	 */
 	public function onStructureGrow(StructureGrowEvent $event) : void{
 		if($event->getPlayer()?->isCreative(true)) return;
 		$world = $event->getBlock()->getPosition()->getWorld();
