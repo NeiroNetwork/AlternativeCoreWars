@@ -18,6 +18,8 @@ use pocketmine\event\player\PlayerBucketFillEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\Fertilizer;
 use pocketmine\item\Tool;
+use pocketmine\math\AxisAlignedBB;
+use pocketmine\math\Vector3;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
@@ -32,6 +34,15 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use ($player){
 			if($player->isOnline() && $player->isAdventure(true)) $player->setGamemode(GameMode::SURVIVAL());
 		}), 45);
+	}
+
+	/**
+	 * AxisAlignedBB::isVectorInside() の閉区間バージョン
+	 */
+	private function isVectorIntersects(AxisAlignedBB $aabb, Vector3 $vector) : bool{
+		if($vector->x < $aabb->minX || $vector->x > $aabb->maxX) return false;
+		if($vector->y < $aabb->minY || $vector->y > $aabb->maxY) return false;
+		return $vector->z >= $aabb->minZ && $vector->z <= $aabb->maxZ;
 	}
 
 	protected function onEnable() : void{
@@ -56,7 +67,7 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 		}
 
 		foreach(Game::getInstance()->getArena()->getStrictProtections() as $protection){
-			if($protection->isVectorInside($position)){
+			if($this->isVectorIntersects($protection, $position)){
 				$event->cancel();
 				$event->protectionType = ProtectionType::STRICT;	// HACK: BlockReformSystemで使う…
 				return;
@@ -66,7 +77,7 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 		if($block instanceof Flowable && count($block->getCollisionBoxes()) === 0) return;
 
 		foreach(Game::getInstance()->getArena()->getLenientProtections() as $protection){
-			if($protection->isVectorInside($position)){
+			if($this->isVectorIntersects($protection, $position)){
 				$event->cancel();
 				$event->protectionType = ProtectionType::LENIENT;	// HACK: BlockReformSystemで使う…
 				return;
@@ -104,7 +115,7 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 		}
 
 		foreach(Game::getInstance()->getArena()->getAllProtections() as $protection){
-			if($protection->isVectorInside($position)){
+			if($this->isVectorIntersects($protection, $position)){
 				$event->cancel();
 				$this->preventGlitches($event->getPlayer());
 				break;
@@ -126,7 +137,7 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 		}
 
 		foreach(Game::getInstance()->getArena()->getAllProtections() as $protection){
-			if($protection->isVectorInside($position)){
+			if($this->isVectorIntersects($protection, $position)){
 				$event->cancel();
 				break;
 			}
@@ -147,7 +158,7 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 		}
 
 		foreach(Game::getInstance()->getArena()->getAllProtections() as $protection){
-			if($protection->isVectorInside($position)){
+			if($this->isVectorIntersects($protection, $position)){
 				$event->cancel();
 				break;
 			}
@@ -167,7 +178,7 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 			if(!($item instanceof Tool || $item instanceof Fertilizer)) return;
 
 			foreach(Game::getInstance()->getArena()->getAllProtections() as $protection){
-				if($protection->isVectorInside($position)){
+				if($this->isVectorIntersects($protection, $position)){
 					$event->cancel();
 
 					// (無理矢理)動作してほしいブロックだけアクションを起こさせる
@@ -201,7 +212,7 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 		foreach($event->getTransaction()->getBlocks() as [$x, $y, $z, $block]){
 			$position->x = $x; $position->y = $y; $position->z = $z;
 			foreach(Game::getInstance()->getArena()->getAllProtections() as $protection){
-				if($protection->isVectorInside($position)){
+				if($this->isVectorIntersects($protection, $position)){
 					$event->cancel();
 					return;
 				}
