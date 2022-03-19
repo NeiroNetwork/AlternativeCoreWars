@@ -259,9 +259,8 @@ class Game extends SubPluginBase implements Listener{
 		$player->getEffects()->add(new EffectInstance(VanillaEffects::BLINDNESS(), 30, visible: false));
 
 		if($player->getLastDamageCause()->getCause() === EntityDamageEvent::CAUSE_VOID){
-			$this->getScheduler()->scheduleDelayedTask(new ClosureTask(fn() =>
-				$player->isOnline() && $player->teleport($player->getPosition()->add(0, $player->getFallDistance(), 0))
-			), 5);
+			$pos = $player->getPosition()->add(0, $player->getFallDistance(), 0);
+			$this->getScheduler()->scheduleDelayedTask(new ClosureTask(fn() => $player->isOnline() && $player->teleport($pos)), 4);
 		}
 
 		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use ($player){
