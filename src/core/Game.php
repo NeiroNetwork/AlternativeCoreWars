@@ -24,6 +24,8 @@ use NeiroNetwork\AlternativeCoreWars\utils\SoulboundItem;
 use NeiroNetwork\AlternativeCoreWars\utils\Utilities;
 use NeiroNetwork\AlternativeCoreWars\world\NexusDestroySound;
 use pocketmine\block\VanillaBlocks;
+use pocketmine\entity\effect\EffectInstance;
+use pocketmine\entity\effect\VanillaEffects;
 use pocketmine\entity\Location;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\entity\EntityDamageEvent;
@@ -151,6 +153,7 @@ class Game extends SubPluginBase implements Listener{
 		TeamReferee::reset();
 
 		foreach($this->getWorld()->getPlayers() as $player){
+			$player->getNetworkSession()->sendDataPacket(BossEventPacket::hide($player->getId()));
 			Lobby::teleportToLobby($player);
 		}
 
@@ -198,7 +201,7 @@ class Game extends SubPluginBase implements Listener{
 		}
 	}
 
-	private function startGameEndPerformance(string $victor) : void{
+	private function startGameEndPerformance(?string $victor) : void{
 		/** @var Fireworks $fireworks */
 		$fireworks = ItemFactory::getInstance()->get(ItemIds::FIREWORKS);
 		$fireworks->addExplosion(Fireworks::TYPE_SMALL_SPHERE,
@@ -253,16 +256,18 @@ class Game extends SubPluginBase implements Listener{
 		if($player->getWorld() !== $this->getWorld()) return;
 
 		Broadcast::title(Translations::YOU_DIED(), " ", recipients: [$player]);
-		//$player->getEffects()->add(new EffectInstance(VanillaEffects::BLINDNESS(), 30, visible: false));
+		$player->getEffects()->add(new EffectInstance(VanillaEffects::BLINDNESS(), 30, visible: false));
 
 		if($player->getLastDamageCause()->getCause() === EntityDamageEvent::CAUSE_VOID){
-			$player->teleport($player->getPosition()->add(0, $player->getFallDistance(), 0));
+			$this->getScheduler()->scheduleDelayedTask(new ClosureTask(fn() =>
+				$player->isOnline() && $player->teleport($player->getPosition()->add(0, $player->getFallDistance(), 0))
+			), 5);
 		}
 
 		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use ($player){
 			// TODO: 実際はリスポーンできる場所を選びリスポーンする
 			if($player->isOnline()){
-				self::spawnInGame($player);
+				$this->spawnInGame($player);
 			}
 		}), 100);
 	}

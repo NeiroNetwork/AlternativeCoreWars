@@ -23,7 +23,10 @@ class EnderChestInventoryKeepHolder extends SubPluginBase implements Listener{
 	}
 
 	public function restore(Human $player) : void{
-		$player->getEnderInventory()->setContents($this->inventoryContents[strtolower($player->getName())] ?? []);
+		$name = strtolower($player->getName());
+		if(isset($this->inventoryContents[$name])){
+			$player->getEnderInventory()->setContents($this->inventoryContents[$name]);
+		}
 	}
 
 	protected function onEnable() : void{
