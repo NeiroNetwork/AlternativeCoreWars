@@ -29,8 +29,8 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 
 	private function preventGlitches(Player $player) : void{
 		$player->setGamemode(GameMode::ADVENTURE());
-		$position = $player->getPosition();
-		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(fn() => $player->teleport($position)), 1);
+		// ローカルで試した遅延なしでも特に問題は見られなかったが、一応遅延させて実行しておく
+		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(fn() => $player->setForceMovementUpdate(true)), 1);
 		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use ($player){
 			if($player->isOnline() && $player->isAdventure(true)) $player->setGamemode(GameMode::SURVIVAL());
 		}), 45);
@@ -74,7 +74,7 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 			}
 		}
 
-		if($block instanceof Flowable && count($block->getCollisionBoxes()) === 0) return;
+		if($block instanceof Flowable && count($block->getCollisionBoxes()) === 0 && $block->getLightLevel() === 0) return;
 
 		foreach(Game::getInstance()->getArena()->getLenientProtections() as $protection){
 			if($this->isVectorIntersects($protection, $position)){
