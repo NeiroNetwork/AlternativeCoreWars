@@ -7,7 +7,7 @@ namespace NeiroNetwork\AlternativeCoreWars\core;
 use NeiroNetwork\AlternativeCoreWars\constants\BroadcastChannels;
 use NeiroNetwork\AlternativeCoreWars\constants\Teams;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
-use NeiroNetwork\AlternativeCoreWars\utils\ArrayUtils;
+use NeiroNetwork\AlternativeCoreWars\utils\Utilities;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerQuitEvent;
@@ -60,7 +60,7 @@ class TeamReferee extends SubPluginBase implements Listener{
 			}
 		}
 
-		ArrayUtils::shuffleAssoc($count);
+		Utilities::arrayShuffle($count);
 		asort($count);
 
 		self::joinTo($player, array_key_first($count));

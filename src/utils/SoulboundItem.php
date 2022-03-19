@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+// FIXME: NeiroNetwork\AlternativeCoreWars\item もしくは NeiroNetwork\AlternativeCoreWars\core\sub が適切？
 namespace NeiroNetwork\AlternativeCoreWars\utils;
 
 use pocketmine\item\Item;

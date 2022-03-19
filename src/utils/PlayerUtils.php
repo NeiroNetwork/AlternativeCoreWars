@@ -10,14 +10,29 @@ use pocketmine\player\Player;
 final class PlayerUtils{
 
 	/**
-	 * エンダーチェストを除くプレイヤーの全てのインベントリをクリアします
+	 * プレイヤー、カーソル、アーマー、オフハンド、クラフティング インベントリをクリアします
 	 */
 	public static function clearAllInventories(Player $player) : void{
-		$player->removeCurrentWindow();
 		$player->getInventory()->clearAll();
 		$player->getCursorInventory()->clearAll();
 		$player->getArmorInventory()->clearAll();
 		$player->getOffHandInventory()->clearAll();
+		$player->getCraftingGrid()->clearAll();
+	}
+
+	/**
+	 * プレイヤーが所有する全てのインベントリを初期状態に戻します
+	 */
+	public static function resetInventories(Player $player) : void{
+		$player->removeCurrentWindow();
+
+		$player->getInventory()->clearAll();
+		$player->getCursorInventory()->clearAll();
+		$player->getArmorInventory()->clearAll();
+		$player->getOffHandInventory()->clearAll();
+		$player->getEnderInventory()->clearAll();
+
+		$player->selectHotbarSlot(0);
 	}
 
 	public static function resetHunger(Player $player) : void{
@@ -27,19 +42,29 @@ final class PlayerUtils{
 		$player->getHungerManager()->setFoodTickTimer(0);
 	}
 
+	public static function resetXp(Player $player) : void{
+		$player->getXpManager()->setXpAndProgress(0, 0.0);
+		$player->getXpManager()->setLifetimeTotalXp(0);
+		$player->getXpManager()->resetXpCooldown(0);
+	}
+
 	/**
 	 * インベントリ、エフェクト、空腹、体力、経験値、ゲームモード、大きさ、名前、移動制限、火 などを初期状態に戻します
 	 */
 	public static function resetAllStates(Player $player) : void{
-		self::clearAllInventories($player);
-		$player->getEnderInventory()->clearAll();
-		$player->selectHotbarSlot(0);
+		self::resetInventories($player);
+
+		$player->getEffects()->clear();
 
 		self::resetHunger($player);
 
-		$player->getXpManager()->setXpAndProgress(0, 0.0);
-		$player->getXpManager()->setLifetimeTotalXp(0);
-		$player->getXpManager()->resetXpCooldown(0);
+		foreach($player->getAttributeMap()->getAll() as $attr){
+			$attr->resetToDefault();
+		}
+
+		$player->setHealth($player->getMaxHealth());
+
+		self::resetXp($player);
 
 		$player->setGamemode($player->getServer()->getGamemode());
 
@@ -52,26 +77,18 @@ final class PlayerUtils{
 
 		$player->setImmobile(false);
 
-		{	/** @see Player::actuallyRespawn() */
-			$player->setSprinting(false);
-			$player->setSneaking(false);
-			$player->setFlying(false);
+		$player->setSprinting(false);
+		$player->setSneaking(false);
+		$player->setFlying(false);
 
-			$player->extinguish();
-			$player->setAirSupplyTicks($player->getMaxAirSupplyTicks());
-			$player->deadTicks = 0;
-			$player->noDamageTicks = 60;
+		$player->extinguish();
 
-			$player->getEffects()->clear();
-			$player->setHealth($player->getMaxHealth());
+		$player->setAirSupplyTicks($player->getMaxAirSupplyTicks());
+		$player->deadTicks = 0;
+		$player->noDamageTicks = 60;
 
-			foreach($player->getAttributeMap()->getAll() as $attr){
-				$attr->resetToDefault();
-			}
-
-			$player->spawnToAll();
-			$player->scheduleUpdate();
-		}
+		$player->spawnToAll();
+		$player->scheduleUpdate();
 	}
 
 	public static function setLimitedSpectator(Player $player) : void{
