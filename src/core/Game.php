@@ -34,6 +34,7 @@ use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerExhaustEvent;
+use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\Armor;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
@@ -244,7 +245,14 @@ class Game extends SubPluginBase implements Listener{
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 	}
 
-	public function onDamage(EntityDamageEvent $event) : void{
+	public function onPlayerQuit(PlayerQuitEvent $event) : void{
+		$player = $event->getPlayer();
+		if($player->getWorld() === $this->getWorld() && $player->isSurvival()){
+			$player->attack(new EntityDamageEvent($player, EntityDamageEvent::CAUSE_SUICIDE, 2 ** 32 - 1));
+		}
+	}
+
+	public function onEntityDamage(EntityDamageEvent $event) : void{
 		$player = $event->getEntity();
 		if(!$player instanceof Player || $player->getWorld() !== $this->getWorld()) return;
 		if(!$this->isRunning()){
