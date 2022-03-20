@@ -4,23 +4,13 @@ declare(strict_types=1);
 
 namespace NeiroNetwork\AlternativeCoreWars\utils;
 
-use NeiroNetwork\TranslationLibrary\Translator;
+use NeiroNetwork\AlternativeCoreWars\Main;
 use pocketmine\lang\Translatable;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\player\Player;
 use pocketmine\Server;
-use pocketmine\world\Position;
 
 final class Broadcast{
-
-	private static Translator $translator;
-
-	/**
-	 * @internal
-	 */
-	public static function setTranslator(Translator $translator) : void{
-		self::$translator = $translator;
-	}
 
 	/**
 	 * @param Player[]|string|null $recipients
@@ -29,7 +19,7 @@ final class Broadcast{
 		$recipients = self::getRealRecipients($recipients);
 		foreach($recipients as $recipient){
 			if(!is_string($message)){
-				$message = self::$translator->translate($message, $recipient);
+				$message = Main::getTranslator()->translate($message, $recipient);
 			}
 			$recipient->sendMessage($message);
 		}
@@ -43,7 +33,7 @@ final class Broadcast{
 		$recipients = self::getRealRecipients($recipients);
 		foreach($recipients as $recipient){
 			if(!is_string($tip)){
-				$tip = self::$translator->translate($tip, $recipient);
+				$tip = Main::getTranslator()->translate($tip, $recipient);
 			}
 			$recipient->sendTip($tip);
 		}
@@ -57,7 +47,7 @@ final class Broadcast{
 		$recipients = self::getRealRecipients($recipients);
 		foreach($recipients as $recipient){
 			if(!is_string($popup)){
-				$popup = self::$translator->translate($popup, $recipient);
+				$popup = Main::getTranslator()->translate($popup, $recipient);
 			}
 			$recipient->sendPopup($popup);
 		}
@@ -71,10 +61,10 @@ final class Broadcast{
 		$recipients = self::getRealRecipients($recipients);
 		foreach($recipients as $recipient){
 			if(!is_string($title)){
-				$title = self::$translator->translate($title, $recipient);
+				$title = Main::getTranslator()->translate($title, $recipient);
 			}
 			if(!is_string($subtitle)){
-				$subtitle = self::$translator->translate($subtitle, $recipient);
+				$subtitle = Main::getTranslator()->translate($subtitle, $recipient);
 			}
 			$recipient->sendTitle($title, $subtitle, $fadeIn, $stay, $fadeOut);
 		}
@@ -88,7 +78,7 @@ final class Broadcast{
 		$recipients = self::getRealRecipients($recipients);
 		foreach($recipients as $recipient){
 			if(!is_string($popup)){
-				$popup = self::$translator->translate($popup, $recipient);
+				$popup = Main::getTranslator()->translate($popup, $recipient);
 			}
 			$recipient->sendJukeboxPopup($popup, []);
 		}
@@ -102,7 +92,7 @@ final class Broadcast{
 		$recipients = self::getRealRecipients($recipients);
 		foreach($recipients as $recipient){
 			if(!is_string($message)){
-				$message = self::$translator->translate($message, $recipient);
+				$message = Main::getTranslator()->translate($message, $recipient);
 			}
 			$recipient->sendActionBarMessage($message);
 		}

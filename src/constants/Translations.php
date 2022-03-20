@@ -35,4 +35,12 @@ final class Translations{
 	public static function START_NEW_PHASE(int $phase) : Translatable{
 		return new Translatable("message.start_new_phase", ["phase" => $phase]);
 	}
+
+	public static function FORM_RESPAWN_TITLE() : Translatable{
+		return new Translatable("form.respawn.title");
+	}
+
+	public static function FORM_RESPAWN_CONTENT() : Translatable{
+		return new Translatable("form.respawn.content");
+	}
 }

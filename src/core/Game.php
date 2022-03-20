@@ -6,6 +6,8 @@ namespace NeiroNetwork\AlternativeCoreWars\core;
 
 use BlockHorizons\Fireworks\entity\FireworksRocket;
 use BlockHorizons\Fireworks\item\Fireworks;
+use dktapps\pmforms\MenuForm;
+use dktapps\pmforms\MenuOption;
 use NeiroNetwork\AlternativeCoreWars\constants\BroadcastChannels;
 use NeiroNetwork\AlternativeCoreWars\constants\Teams;
 use NeiroNetwork\AlternativeCoreWars\constants\Translations;
@@ -17,6 +19,7 @@ use NeiroNetwork\AlternativeCoreWars\event\GameFinishEvent;
 use NeiroNetwork\AlternativeCoreWars\event\GameStartEvent;
 use NeiroNetwork\AlternativeCoreWars\event\NexusDamageEvent;
 use NeiroNetwork\AlternativeCoreWars\event\PlayerDeathWithoutDeathScreenEvent;
+use NeiroNetwork\AlternativeCoreWars\Main;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use NeiroNetwork\AlternativeCoreWars\utils\Broadcast;
 use NeiroNetwork\AlternativeCoreWars\utils\PlayerUtils;
@@ -41,6 +44,7 @@ use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\utils\TextFormat;
+use pocketmine\world\Position;
 use pocketmine\world\sound\ExplodeSound;
 use pocketmine\world\World;
 
@@ -107,13 +111,13 @@ class Game extends SubPluginBase implements Listener{
 		$this->spawnInGame($player);
 	}
 
-	private function spawnInGame(Player $player) : void{
+	private function spawnInGame(Player $player, Position $position = null) : void{
 		PlayerUtils::resetAllStates($player);
 
 		$team = TeamReferee::getTeam($player);
 		$player->setNameTag(Teams::textColor($team) . $player->getName() . TextFormat::RESET);
 		$player->setDisplayName(Teams::textColor($team) . $player->getName() . TextFormat::RESET);
-		$player->teleport(reset($this->getArena()->getSpawns()[$team]));
+		$player->teleport($position ?? reset($this->getArena()->getSpawns()[$team]));
 
 		// TODO: give items (Kits との連携)
 		{
@@ -263,12 +267,35 @@ class Game extends SubPluginBase implements Listener{
 			$this->getScheduler()->scheduleDelayedTask(new ClosureTask(fn() => $player->isOnline() && $player->teleport($pos)), 4);
 		}
 
-		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use ($player){
-			// TODO: 実際はリスポーンできる場所を選びリスポーンする
-			if($player->isOnline()){
+		$isRespawned = false;
+		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use ($player, &$isRespawned) : void{
+			if(!$player->isOnline() || is_null($team = TeamReferee::getTeam($player))) return;
+			$spawns = Game::getInstance()->getArena()->getTeamSpawns($team);
+			$player->sendForm(new MenuForm(
+				Main::getTranslator()->translate(Translations::FORM_RESPAWN_TITLE(), $player),
+				Main::getTranslator()->translate(Translations::FORM_RESPAWN_CONTENT(), $player),
+				array_map(fn($key) => new MenuOption((string) $key), array_keys($spawns)),	// FIXME: スポーン地点配列のキーは文字列であることをArenaDataが保証するべき
+				function(Player $player, int $selectedOption) use ($spawns, &$isRespawned) : void{
+					$position = array_values($spawns)[$selectedOption];
+					if($position->isValid() && !$isRespawned){
+						$isRespawned = true;
+						$this->spawnInGame($player, $position);
+					}
+				},
+				function(Player $player) use (&$isRespawned) : void{
+					if(!$isRespawned){
+						$isRespawned = true;
+						$this->spawnInGame($player);
+					}
+				}
+			));
+		}), 10 * 20);
+		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use ($player, &$isRespawned) : void{
+			if($player->isOnline() && !$isRespawned){
+				$isRespawned = true;
 				$this->spawnInGame($player);
 			}
-		}), 100);
+		}), 18 * 20);
 	}
 
 	public function onExhaust(PlayerExhaustEvent $event) : void{

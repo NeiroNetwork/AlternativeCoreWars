@@ -90,6 +90,13 @@ class ArenaData{
 	/**
 	 * @return Position[]
 	 */
+	public function getTeamSpawns(string $team) : array{
+		return $this->spawns[$team];
+	}
+
+	/**
+	 * @return Position[]
+	 */
 	public function getNexuses() : array{
 		return $this->nexuses;
 	}

@@ -22,11 +22,17 @@ use pocketmine\plugin\PluginBase;
 
 class Main extends PluginBase{
 
+	private static Translator $translator;
+
+	public static function getTranslator() : Translator{
+		return self::$translator;
+	}
+
 	/** @var SubPluginBase[] */
 	private array $plugins;
 
 	protected function onLoad() : void{
-		Broadcast::setTranslator(new Translator($this, "ja_jp"));
+		self::$translator = new Translator($this, "ja_jp");
 
 		$parameters = [
 			$this->getPluginLoader(),
