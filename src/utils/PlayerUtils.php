@@ -62,7 +62,8 @@ final class PlayerUtils{
 			$attr->resetToDefault();
 		}
 
-		$player->setHealth($player->getMaxHealth());
+		$player->setMaxHealth(20);
+		$player->setHealth(20.0);
 
 		self::resetXp($player);
 

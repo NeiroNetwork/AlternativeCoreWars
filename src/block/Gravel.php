@@ -10,6 +10,6 @@ use pocketmine\item\VanillaItems;
 class Gravel extends \pocketmine\block\Gravel{
 
 	public function getDropsForCompatibleTool(Item $item) : array{
-		return mt_rand(1, 3) === 1 ? [VanillaItems::FLINT()] : parent::getDropsForCompatibleTool($item);
+		return mt_rand(1, 4) === 1 ? [VanillaItems::FLINT()] : parent::getDropsForCompatibleTool($item);
 	}
 }

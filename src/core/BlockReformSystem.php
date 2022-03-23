@@ -27,7 +27,8 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 
 	/**
 	 * @handleCancelled
-	 * @priority LOW
+	 * @priority HIGH
+	 * FIXME: LOW → HIGH に変えたが影響が分からない
 	 */
 	public function onBlockBreak(BlockBreakEvent $event) : void{
 		// 緩い保護あるいはキャンセルされていないイベントである
@@ -121,6 +122,7 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 		$add("carrots", clone $get("wheat"));
 
 		$add("leaves", new BlockReformOption(18, 24, protection: true));
+		$add("leaves2", clone $get("leaves"));
 		$add("gravel", new BlockReformOption(25, 35, protection: true));
 	}
 }

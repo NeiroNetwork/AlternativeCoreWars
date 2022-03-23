@@ -18,6 +18,7 @@ use NeiroNetwork\AlternativeCoreWars\event\GameEndEvent;
 use NeiroNetwork\AlternativeCoreWars\event\GameFinishEvent;
 use NeiroNetwork\AlternativeCoreWars\event\GameStartEvent;
 use NeiroNetwork\AlternativeCoreWars\event\NexusDamageEvent;
+use NeiroNetwork\AlternativeCoreWars\event\PhaseStartEvent;
 use NeiroNetwork\AlternativeCoreWars\event\PlayerDeathWithoutDeathScreenEvent;
 use NeiroNetwork\AlternativeCoreWars\Main;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
@@ -26,6 +27,7 @@ use NeiroNetwork\AlternativeCoreWars\utils\PlayerUtils;
 use NeiroNetwork\AlternativeCoreWars\utils\SoulboundItem;
 use NeiroNetwork\AlternativeCoreWars\utils\Utilities;
 use NeiroNetwork\AlternativeCoreWars\world\NexusDestroySound;
+use pocketmine\block\DiamondOre;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\entity\effect\EffectInstance;
 use pocketmine\entity\effect\VanillaEffects;
@@ -170,13 +172,21 @@ class Game extends SubPluginBase implements Listener{
 
 		$this->displayCurrentGameStatus();
 
+		if($this->phase === 0 && $this->time === 0){
+			// FIXME: 似たようなコードが下にもあるが、まとめるかどうか悩ましい
+			Broadcast::message(Translations::START_NEW_PHASE($this->phase + 1), $this->getWorld()->getPlayers());
+			Broadcast::message(Translations::PHASE_INFO($this->phase + 1), $this->getWorld()->getPlayers());
+			(new PhaseStartEvent($this))->call();
+		}
+
 		if($this->phase + 1 < count(self::GAME_TIME_TABLE) && $this->time++ >= self::GAME_TIME_TABLE[$this->phase]){
 			$this->phase++;
 			$this->time = 0;
 
-			// TODO: フェーズ移行時の演出
-			Broadcast::message(Translations::START_NEW_PHASE($this->phase + 1), $this->getWorld()->getPlayers());
 			Broadcast::sound("mob.wither.spawn", recipients: $this->getWorld()->getPlayers());
+			Broadcast::message(Translations::START_NEW_PHASE($this->phase + 1), $this->getWorld()->getPlayers());
+			Broadcast::message(Translations::PHASE_INFO($this->phase + 1), $this->getWorld()->getPlayers());
+			(new PhaseStartEvent($this))->call();
 		}
 	}
 
@@ -308,13 +318,25 @@ class Game extends SubPluginBase implements Listener{
 
 	public function onExhaust(PlayerExhaustEvent $event) : void{
 		if($event->getPlayer()?->getWorld() === $this->getWorld()){
-			$event->setAmount($event->getAmount() * (mt_rand(40, 65) / 100));
+			$event->setAmount($event->getAmount() * (mt_rand(40, 50) / 100));
+		}
+	}
+
+	public function onBlockBreak(BlockBreakEvent $event) : void{
+		$player = $event->getPlayer();
+		if($player->isCreative() || $player->getWorld() !== $this->getWorld()) return;
+
+		$block = $event->getBlock();
+		if($this->phase <= 1 && $block instanceof DiamondOre){
+			$event->cancel();
+			Broadcast::message(Translations::CANNOT_MINE_DIAMOND_ORE(), [$player]);
+			Broadcast::sound("note.bass", recipients: [$player]);
 		}
 	}
 
 	/**
 	 * @handleCancelled
-	 * @priority HIGH
+	 * @priority HIGHEST
 	 */
 	public function onBreakNexus(BlockBreakEvent $event) : void{
 		$player = $event->getPlayer();

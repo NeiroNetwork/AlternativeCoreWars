@@ -13,7 +13,7 @@ class GameEndEvent extends GameEvent{
 
 	public function __construct(
 		Game $game,
-		protected ?string $victor
+		private ?string $victor
 	){
 		parent::__construct($game);
 	}

@@ -32,8 +32,16 @@ final class Translations{
 		return new Translatable("message.cannot_destroy_nexus");
 	}
 
+	public static function CANNOT_MINE_DIAMOND_ORE() : Translatable{
+		return new Translatable("message.cannot_mine_diamond_ore");
+	}
+
 	public static function START_NEW_PHASE(int $phase) : Translatable{
 		return new Translatable("message.start_new_phase", ["phase" => $phase]);
+	}
+
+	public static function PHASE_INFO(int $phase) : Translatable{
+		return new Translatable("message.phase_info.$phase");
 	}
 
 	public static function FORM_RESPAWN_TITLE() : Translatable{

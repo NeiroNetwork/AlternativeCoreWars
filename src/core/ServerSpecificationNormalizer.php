@@ -14,7 +14,6 @@ use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\utils\TreeType;
 use pocketmine\block\VanillaBlocks;
-use pocketmine\event\entity\ItemMergeEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\world\WorldLoadEvent;
 use pocketmine\permission\DefaultPermissionNames;
@@ -101,9 +100,13 @@ class ServerSpecificationNormalizer extends SubPluginBase implements Listener{
 
 	private function reduceCommandPermissions() : void{
 		$operator = PermissionManager::getInstance()->getPermission(DefaultPermissions::ROOT_OPERATOR);
+		$console = PermissionManager::getInstance()->getPermission(DefaultPermissions::ROOT_CONSOLE);
 		$operator->removeChild(DefaultPermissionNames::COMMAND_OP_GIVE);
+		$console->addChild(DefaultPermissionNames::COMMAND_OP_GIVE, true);
 		//$operator->removeChild(DefaultPermissionNames::COMMAND_OP_TAKE);
+		//$console->addChild(DefaultPermissionNames::COMMAND_OP_TAKE, true);
 		$operator->removeChild(DefaultPermissionNames::COMMAND_DUMPMEMORY);
+		$console->addChild(DefaultPermissionNames::COMMAND_DUMPMEMORY, true);
 	}
 
 	private function overwriteBlocks() : void{
@@ -133,9 +136,5 @@ class ServerSpecificationNormalizer extends SubPluginBase implements Listener{
 
 	public function onWorldLoad(WorldLoadEvent $event) : void{
 		$event->getWorld()->stopTime();
-	}
-
-	public function onItemMerge(ItemMergeEvent $event) : void{
-		//$event->cancel();
 	}
 }
