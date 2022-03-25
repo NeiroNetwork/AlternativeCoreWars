@@ -9,6 +9,7 @@ use BlockHorizons\Fireworks\item\Fireworks;
 use dktapps\pmforms\MenuForm;
 use dktapps\pmforms\MenuOption;
 use NeiroNetwork\AlternativeCoreWars\constants\BroadcastChannels;
+use NeiroNetwork\AlternativeCoreWars\constants\EntityDamageCause;
 use NeiroNetwork\AlternativeCoreWars\constants\Teams;
 use NeiroNetwork\AlternativeCoreWars\constants\Translations;
 use NeiroNetwork\AlternativeCoreWars\core\subs\Arena;
@@ -34,6 +35,7 @@ use pocketmine\entity\effect\VanillaEffects;
 use pocketmine\entity\Location;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerQuitEvent;
@@ -63,13 +65,11 @@ class Game extends SubPluginBase implements Listener{
 	}
 
 	private bool $running = false;
-
 	private ?Arena $arena = null;
-
 	private int $phase = 0;
-	private int $time = 0;
+	private int $time;
 	/** @var int[] */
-	private array $nexus = [Teams::RED => 100, Teams::BLUE => 100];
+	private array $nexus;
 
 	public function isRunning() : bool{
 		return $this->running;
@@ -88,7 +88,7 @@ class Game extends SubPluginBase implements Listener{
 	}
 
 	public function preGame(GameQueue $queue, Arena $arena) : void{
-		// FIXME: ゲーム変数の初期化はここで良い？
+		// ゲーム変数の初期化
 		$this->phase = 0;
 		$this->time = 0;
 		$this->nexus = [Teams::RED => 100, Teams::BLUE => 100];
@@ -160,7 +160,6 @@ class Game extends SubPluginBase implements Listener{
 		TeamReferee::reset();
 
 		foreach($this->getWorld()->getPlayers() as $player){
-			$player->getNetworkSession()->sendDataPacket(BossEventPacket::hide($player->getId()));
 			Lobby::teleportToLobby($player);
 		}
 
@@ -200,17 +199,8 @@ class Game extends SubPluginBase implements Listener{
 			array_keys($this->nexus), $this->nexus
 		));
 
-		// FIXME: プレイヤー毎ループは効率が悪いのでは？ (broadcastPacketsなどで一気に送信した方が良さそう)
 		foreach($this->getWorld()->getPlayers() as $player){
-			// FIXME: 毎回表示させるパケットを送るのも効率悪い
-			$player->getNetworkSession()->sendDataPacket(BossEventPacket::show(
-				$player->getId(), "", 1.0,
-				color: match(TeamReferee::getTeam($player)){
-					Teams::RED => BossBarColor::RED,
-					Teams::BLUE => BossBarColor::BLUE,
-					default => BossBarColor::PURPLE,
-				}
-			));
+			// FIXME?: プレイヤーのIDでボスバーを表示しているため、 Server::broadcastPackets() が使えない
 			$player->getNetworkSession()->sendDataPacket(BossEventPacket::title($player->getId(), "Phase $phase | $time\n\n    $nexus"));
 			$player->getNetworkSession()->sendDataPacket(BossEventPacket::healthPercent($player->getId(), $seconds / self::GAME_TIME_TABLE[$this->phase]));
 		}
@@ -258,7 +248,7 @@ class Game extends SubPluginBase implements Listener{
 	public function onPlayerQuit(PlayerQuitEvent $event) : void{
 		$player = $event->getPlayer();
 		if($player->getWorld() === $this->getWorld() && $player->isSurvival()){
-			$player->attack(new EntityDamageEvent($player, EntityDamageEvent::CAUSE_SUICIDE, 2 ** 32 - 1));
+			$player->attack(new EntityDamageEvent($player, EntityDamageCause::GAME_QUIT, 2 ** 32 - 1));
 		}
 	}
 
@@ -276,6 +266,9 @@ class Game extends SubPluginBase implements Listener{
 	public function onDeath(PlayerDeathWithoutDeathScreenEvent $event) : void{
 		$player = $event->getPlayer();
 		if($player->getWorld() !== $this->getWorld()) return;
+
+		// ゲームから抜けた場合はリスポーンの処理を行わない
+		if($event->getPlayer()->getLastDamageCause()?->getCause() === EntityDamageCause::GAME_QUIT) return;
 
 		Broadcast::title(Translations::YOU_DIED(), " ", recipients: [$player]);
 		$player->getEffects()->add(new EffectInstance(VanillaEffects::BLINDNESS(), 30, visible: false));
@@ -313,7 +306,7 @@ class Game extends SubPluginBase implements Listener{
 				$isRespawned = true;
 				$this->spawnInGame($player);
 			}
-		}), 18 * 20);
+		}), 25 * 20);
 	}
 
 	public function onExhaust(PlayerExhaustEvent $event) : void{
@@ -354,6 +347,7 @@ class Game extends SubPluginBase implements Listener{
 				break;
 			}
 		}
+		assert(isset($team) && is_string($team));
 		if(!$isNexusBroken || $this->nexus[$team] <= 0) return;
 
 		$ev = new NexusDamageEvent($this, $team, self::NEXUS_DAMAGES[$this->phase], $player);
@@ -390,5 +384,25 @@ class Game extends SubPluginBase implements Listener{
 		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(
 			fn() => $position->getWorld()->setBlock($position, $isTeamDied ? VanillaBlocks::BEDROCK() : $block, false)
 		), $isTeamDied ? 1 : 6);
+	}
+
+	public function onEntityTeleport(EntityTeleportEvent $event) : void{
+		$player = $event->getEntity();
+		$from = $event->getFrom()->getWorld();
+		$to = $event->getTo()->getWorld();
+		if(!$player instanceof Player || $from === $to) return;
+
+		if($to === $this->getWorld()){
+			$player->getNetworkSession()->sendDataPacket(BossEventPacket::show(
+				$player->getId(), "", 1.0,
+				color: match(TeamReferee::getTeam($player)){
+					Teams::RED => BossBarColor::RED,
+					Teams::BLUE => BossBarColor::BLUE,
+					default => BossBarColor::PURPLE,
+				}
+			));
+		}elseif($from === $this->getWorld()){
+			$player->getNetworkSession()->sendDataPacket(BossEventPacket::hide($player->getId()));
+		}
 	}
 }
