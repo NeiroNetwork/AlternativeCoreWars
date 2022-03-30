@@ -58,10 +58,6 @@ final class PlayerUtils{
 
 		self::resetHunger($player);
 
-		foreach($player->getAttributeMap()->getAll() as $attr){
-			$attr->resetToDefault();
-		}
-
 		$player->setMaxHealth(20);
 		$player->setHealth(20.0);
 

@@ -17,15 +17,18 @@ use pocketmine\network\mcpe\protocol\ContainerSetDataPacket;
 use pocketmine\player\Player;
 use pocketmine\world\World;
 
-abstract class PrivateFurnaceTile extends Furnace{
+abstract class PrivateFurnaceTile extends Furnace implements PrivateCraftingTileInterface{
+	use PrivateCraftingTileTrait;
 
 	private int $remainingFuelTime = 0;
 	private int $cookTime = 0;
 	private int $maxFuelTime = 0;
 
-	public function __construct(World $world, Vector3 $pos){
+	/** @noinspection PhpMissingParentConstructorInspection */
+	public function __construct(World $world, Vector3 $pos, Player $player){
 		Spawnable::__construct($world, $pos);
 		$this->inventory = new FurnaceInventory($this->position, $this->getFurnaceType());
+		$this->player = $player;
 	}
 
 	public function readSaveData(CompoundTag $nbt) : void{
@@ -123,6 +126,10 @@ abstract class PrivateFurnaceTile extends Furnace{
 			if($prevCookTime !== $this->cookTime) $v->syncData($this->inventory, ContainerSetDataPacket::PROPERTY_FURNACE_SMELT_PROGRESS, $this->cookTime);
 			if($prevRemainingFuelTime !== $this->remainingFuelTime) $v->syncData($this->inventory, ContainerSetDataPacket::PROPERTY_FURNACE_REMAINING_FUEL_TIME, $this->remainingFuelTime);
 			if($prevMaxFuelTime !== $this->maxFuelTime) $v->syncData($this->inventory, ContainerSetDataPacket::PROPERTY_FURNACE_MAX_FUEL_TIME, $this->maxFuelTime);
+		}
+
+		if($ret && !is_null($this->player) && mt_rand(1, 60) === 1){
+			$this->position->getWorld()->addSound($this->position, $this->getFurnaceType()->getCookSound(), [$this->player]);
 		}
 
 		$this->timings->stopTiming();

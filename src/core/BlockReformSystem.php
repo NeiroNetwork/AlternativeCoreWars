@@ -66,9 +66,15 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 			$event->uncancel();
 
 			$player = $event->getPlayer();
-			foreach($event->getDrops() as $dropItem) $player->getInventory()->addItem($dropItem);
+			foreach($event->getDrops() as $dropItem){
+				if(!$dropItem->isNull()){
+					$entity = $player->getWorld()->dropItem($position->add(0.5, 0.5, 0.5), $dropItem, delay: 0);
+					$entity->onCollideWithPlayer($player);
+				}
+			}
 			$event->setDrops([]);
-			$player->getXpManager()->addXp(($event->getXpDropAmount() + $option->getBaseXp()) * $option->getXpBoost());
+			$earnXp = ($event->getXpDropAmount() + $option->getBaseXp()) * $option->getXpBoost();
+			if($earnXp > 0) $player->getXpManager()->onPickupXp($earnXp);
 			$event->setXpDropAmount(0);
 		}
 	}
