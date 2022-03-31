@@ -122,15 +122,15 @@ abstract class PrivateFurnaceTile extends Furnace implements PrivateCraftingTile
 		if(!is_null($this->player)){
 			// ブロックを送信する
 			// FIXME: どのくらいの負荷がかかるのか分からない
-			$session = $this->player->getNetworkSession();
-			$block = $this->getBlock()->setLit($ret);
-			$blockPosition = BlockPosition::fromVector3($block->getPosition());
-			$session->sendDataPacket(UpdateBlockPacket::create(
-				$blockPosition,
-				RuntimeBlockMapping::getInstance()->toRuntimeId($block->getFullId()),
-				UpdateBlockPacket::FLAG_NETWORK,
-				UpdateBlockPacket::DATA_LAYER_NORMAL
-			));
+			if(($block = $this->getBlock()) instanceof \pocketmine\block\Furnace){
+				$blockPosition = BlockPosition::fromVector3($block->setLit($ret)->getPosition());
+				$this->player->getNetworkSession()->sendDataPacket(UpdateBlockPacket::create(
+					$blockPosition,
+					RuntimeBlockMapping::getInstance()->toRuntimeId($block->getFullId()),
+					UpdateBlockPacket::FLAG_NETWORK,
+					UpdateBlockPacket::DATA_LAYER_NORMAL
+				));
+			}
 
 			if($ret && mt_rand(1, 60) === 1){
 				$this->position->getWorld()->addSound($this->position, $this->getFurnaceType()->getCookSound(), [$this->player]);
