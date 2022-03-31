@@ -149,12 +149,12 @@ class PrivateCraftingForBrewingAndSmelting extends SubPluginBase implements List
 	 * @notHandler Called by override block
 	 */
 	public function onPlayerInteractPrivateCraftingBlockHook(PlayerInteractEvent $event) : bool{
+		if(PlayerBlockTracker::exists($event->getBlock()->getPosition())) return false;
+
 		$tile = $this->getTile($event->getBlock(), $event->getPlayer());
 		if($tile->canOpenWith($event->getItem()->getCustomName())){
 			$event->getPlayer()->setCurrentWindow($tile->getInventory());
 		}
 		return true;
-
-		// TODO: プレイヤーが置いたブロックはプライベートかまどにしない
 	}
 }
