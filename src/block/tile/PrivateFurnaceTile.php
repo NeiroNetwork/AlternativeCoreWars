@@ -13,7 +13,10 @@ use pocketmine\event\inventory\FurnaceSmeltEvent;
 use pocketmine\item\Item;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
 use pocketmine\network\mcpe\protocol\ContainerSetDataPacket;
+use pocketmine\network\mcpe\protocol\types\BlockPosition;
+use pocketmine\network\mcpe\protocol\UpdateBlockPacket;
 use pocketmine\player\Player;
 use pocketmine\world\World;
 
@@ -55,19 +58,10 @@ abstract class PrivateFurnaceTile extends Furnace implements PrivateCraftingTile
 		if($ev->isCancelled()) return;
 
 		$this->maxFuelTime = $this->remainingFuelTime = $ev->getBurnTime();
-		$this->onStartSmelting();
 
 		if($this->remainingFuelTime > 0 && $ev->isBurning()){
 			$this->inventory->setFuel($fuel->getFuelResidue());
 		}
-	}
-
-	protected function onStartSmelting() : void{
-		// TODO: set lit true
-	}
-
-	protected function onStopSmelting() : void{
-		// TODO: set lit false
 	}
 
 	public function onUpdate() : bool{
@@ -78,8 +72,6 @@ abstract class PrivateFurnaceTile extends Furnace implements PrivateCraftingTile
 		$prevCookTime = $this->cookTime;
 		$prevRemainingFuelTime = $this->remainingFuelTime;
 		$prevMaxFuelTime = $this->maxFuelTime;
-
-		$ret = false;
 
 		$fuel = $this->inventory->getFuel();
 		$raw = $this->inventory->getSmelting();
@@ -93,7 +85,7 @@ abstract class PrivateFurnaceTile extends Furnace implements PrivateCraftingTile
 			$this->checkFuel($fuel);
 		}
 
-		if($this->remainingFuelTime-- > 0){
+		if($ret = $this->remainingFuelTime-- > 0){
 			if($smelt instanceof FurnaceRecipe && $canSmelt){
 				if(++$this->cookTime >= $furnaceType->getCookDurationTicks()){
 					$product = $smelt->getResult()->setCount($product->getCount() + 1);
@@ -114,14 +106,11 @@ abstract class PrivateFurnaceTile extends Furnace implements PrivateCraftingTile
 			}else{
 				$this->cookTime = 0;
 			}
-			$ret = true;
 		}else{
-			$this->onStopSmelting();
 			$this->remainingFuelTime = $this->cookTime = $this->maxFuelTime = 0;
 		}
 
-		$manager = $this->player?->getNetworkSession()->getInvManager();
-		if(!is_null($manager)){
+		if(!is_null($manager = $this->player?->getNetworkSession()->getInvManager())){
 			if($prevCookTime !== $this->cookTime)
 				$manager->syncData($this->inventory, ContainerSetDataPacket::PROPERTY_FURNACE_SMELT_PROGRESS, $this->cookTime);
 			if($prevRemainingFuelTime !== $this->remainingFuelTime)
@@ -130,8 +119,22 @@ abstract class PrivateFurnaceTile extends Furnace implements PrivateCraftingTile
 				$manager->syncData($this->inventory, ContainerSetDataPacket::PROPERTY_FURNACE_MAX_FUEL_TIME, $this->maxFuelTime);
 		}
 
-		if($ret && !is_null($this->player) && mt_rand(1, 60) === 1){
-			$this->position->getWorld()->addSound($this->position, $this->getFurnaceType()->getCookSound(), [$this->player]);
+		if(!is_null($this->player)){
+			// ブロックを送信する
+			// FIXME: どのくらいの負荷がかかるのか分からない
+			$session = $this->player->getNetworkSession();
+			$block = $this->getBlock()->setLit($ret);
+			$blockPosition = BlockPosition::fromVector3($block->getPosition());
+			$session->sendDataPacket(UpdateBlockPacket::create(
+				$blockPosition,
+				RuntimeBlockMapping::getInstance()->toRuntimeId($block->getFullId()),
+				UpdateBlockPacket::FLAG_NETWORK,
+				UpdateBlockPacket::DATA_LAYER_NORMAL
+			));
+
+			if($ret && mt_rand(1, 60) === 1){
+				$this->position->getWorld()->addSound($this->position, $this->getFurnaceType()->getCookSound(), [$this->player]);
+			}
 		}
 
 		$this->timings->stopTiming();
