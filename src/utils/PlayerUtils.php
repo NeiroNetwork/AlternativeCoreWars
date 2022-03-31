@@ -35,6 +35,11 @@ final class PlayerUtils{
 		$player->selectHotbarSlot(0);
 	}
 
+	public static function resetHealth(Player $player) : void{
+		$player->setMaxHealth(20);
+		$player->setHealth(20.0);
+	}
+
 	public static function resetHunger(Player $player) : void{
 		$player->getHungerManager()->setFood(20.00);
 		$player->getHungerManager()->setSaturation(20.00);
@@ -53,14 +58,9 @@ final class PlayerUtils{
 	 */
 	public static function resetAllStates(Player $player) : void{
 		self::resetInventories($player);
-
 		$player->getEffects()->clear();
-
+		self::resetHealth($player);
 		self::resetHunger($player);
-
-		$player->setMaxHealth(20);
-		$player->setHealth(20.0);
-
 		self::resetXp($player);
 
 		$player->setGamemode($player->getServer()->getGamemode());
