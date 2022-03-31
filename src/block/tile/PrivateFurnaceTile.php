@@ -120,12 +120,14 @@ abstract class PrivateFurnaceTile extends Furnace implements PrivateCraftingTile
 			$this->remainingFuelTime = $this->cookTime = $this->maxFuelTime = 0;
 		}
 
-		$viewers = array_map(fn(Player $p) => $p->getNetworkSession()->getInvManager(), $this->inventory->getViewers());
-		foreach($viewers as $v){
-			if($v === null) continue;
-			if($prevCookTime !== $this->cookTime) $v->syncData($this->inventory, ContainerSetDataPacket::PROPERTY_FURNACE_SMELT_PROGRESS, $this->cookTime);
-			if($prevRemainingFuelTime !== $this->remainingFuelTime) $v->syncData($this->inventory, ContainerSetDataPacket::PROPERTY_FURNACE_REMAINING_FUEL_TIME, $this->remainingFuelTime);
-			if($prevMaxFuelTime !== $this->maxFuelTime) $v->syncData($this->inventory, ContainerSetDataPacket::PROPERTY_FURNACE_MAX_FUEL_TIME, $this->maxFuelTime);
+		$manager = $this->player?->getNetworkSession()->getInvManager();
+		if(!is_null($manager)){
+			if($prevCookTime !== $this->cookTime)
+				$manager->syncData($this->inventory, ContainerSetDataPacket::PROPERTY_FURNACE_SMELT_PROGRESS, $this->cookTime);
+			if($prevRemainingFuelTime !== $this->remainingFuelTime)
+				$manager->syncData($this->inventory, ContainerSetDataPacket::PROPERTY_FURNACE_REMAINING_FUEL_TIME, $this->remainingFuelTime);
+			if($prevMaxFuelTime !== $this->maxFuelTime)
+				$manager->syncData($this->inventory, ContainerSetDataPacket::PROPERTY_FURNACE_MAX_FUEL_TIME, $this->maxFuelTime);
 		}
 
 		if($ret && !is_null($this->player) && mt_rand(1, 60) === 1){

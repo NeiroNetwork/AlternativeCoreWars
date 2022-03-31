@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace NeiroNetwork\AlternativeCoreWars\core;
 
+use NeiroNetwork\AlternativeCoreWars\block\tile\PrivateBlastFurnace;
 use NeiroNetwork\AlternativeCoreWars\block\tile\PrivateCraftingTileInterface;
 use NeiroNetwork\AlternativeCoreWars\block\tile\PrivateNormalFurnace;
+use NeiroNetwork\AlternativeCoreWars\block\tile\PrivateSmoker;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use pocketmine\block\Block;
-use pocketmine\block\BlockBreakInfo;
 use pocketmine\block\BlockFactory;
-use pocketmine\block\BlockIdentifierFlattened;
-use pocketmine\block\BlockLegacyIds;
-use pocketmine\block\BlockToolType;
 use pocketmine\block\BrewingStand;
 use pocketmine\block\Furnace;
+use pocketmine\block\VanillaBlocks;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
@@ -23,7 +22,6 @@ use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\world\WorldLoadEvent;
 use pocketmine\event\world\WorldUnloadEvent;
 use pocketmine\item\Item;
-use pocketmine\item\ToolTier;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
@@ -48,9 +46,32 @@ class PrivateCraftingForBrewingAndSmelting extends SubPluginBase implements List
 		$p = $block->getPosition();
 		$id = $p->getWorld()->getId();
 		$hash = World::blockHash($p->getX(), $p->getY(), $p->getZ());
-		$class = $block->getIdInfo()->getTileClass();
+
+		$class = match($block->getName()){
+			"Furnace" => PrivateNormalFurnace::class,
+			"Blast Furnace" => PrivateBlastFurnace::class,
+			"Smoker" => PrivateSmoker::class,
+			// TODO: brewing_stand
+		};
 
 		return self::$instance->tiles[$id][$hash][$player->getName()] ??= new $class($p->getWorld(), $p->asVector3(), $player);
+	}
+
+	private function overrideBlocks() : void{
+		$getParams = fn(Block $origin) => [$origin->getIdInfo(), $origin->getName(), $origin->getBreakInfo()];
+
+		foreach([VanillaBlocks::FURNACE(), VanillaBlocks::BLAST_FURNACE(), VanillaBlocks::SMOKER()] as $block){
+			BlockFactory::getInstance()->register(new class(...$getParams($block)) extends Furnace{
+				public function onInteract(Item $item, int $face, Vector3 $clickVector, ?Player $player = null) : bool{
+					if(is_null($player) || !PrivateCraftingForBrewingAndSmelting::hookInteract($player, $item, $this, $clickVector, $face)){
+						return parent::onInteract($item, $face, $clickVector, $player);
+					}
+					return true;
+				}
+			}, true);
+		}
+
+		// TODO: brewing_stand
 	}
 
 	protected function onLoad() : void{
@@ -63,19 +84,7 @@ class PrivateCraftingForBrewingAndSmelting extends SubPluginBase implements List
 			foreach($this->tiles as $arrayTiles) foreach($arrayTiles as $tiles) foreach($tiles as $tile) $tile->onUpdate();
 		}), 1);
 
-		// TODO: better override
-		BlockFactory::getInstance()->register(new class(
-			new BlockIdentifierFlattened(BlockLegacyIds::FURNACE, [BlockLegacyIds::LIT_FURNACE], 0, null, PrivateNormalFurnace::class),
-			"Furnace",
-			new BlockBreakInfo(3.5, BlockToolType::PICKAXE, ToolTier::WOOD()->getHarvestLevel())
-		) extends Furnace{
-			public function onInteract(Item $item, int $face, Vector3 $clickVector, ?Player $player = null) : bool{
-				if(is_null($player) || !PrivateCraftingForBrewingAndSmelting::hookInteract($player, $item, $this, $clickVector, $face)){
-					return parent::onInteract($item, $face, $clickVector, $player);
-				}
-				return true;
-			}
-		}, true);
+		$this->overrideBlocks();
 	}
 
 	public function onPlayerLogin(PlayerLoginEvent $event) : void{
