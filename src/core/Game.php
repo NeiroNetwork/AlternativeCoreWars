@@ -122,10 +122,8 @@ class Game extends SubPluginBase implements Listener{
 		$player->setDisplayName(Teams::textColor($team) . $player->getName() . TextFormat::RESET);
 		$player->teleport($position ?? reset($this->getArena()->getSpawns()[$team]));
 
-		// TODO: give items (Kits との連携)
-		{
-			$player->getArmorInventory()->setChestplate(VanillaItems::LEATHER_TUNIC());
-			$player->getInventory()->setItem(0, VanillaItems::WOODEN_HOE());
+		if(class_exists("\NeiroNetwork\Kits\Main")){
+			\NeiroNetwork\Kits\Main::getData()->getTableByPlayer($player)->setInventory();
 		}
 
 		foreach($player->getInventory()->getContents() as $index => $item){
