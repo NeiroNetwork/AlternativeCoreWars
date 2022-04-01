@@ -76,7 +76,15 @@ class Lobby extends SubPluginBase implements Listener{
 	}
 
 	public function onJoin(PlayerJoinEvent $event) : void{
-		self::teleportToLobby($event->getPlayer());
+		$player = $event->getPlayer();
+		self::teleportToLobby($player);
+		/*
+		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use ($player) : void{
+			if($player->isOnline()){
+				$player->sendTitle("§6N§ee§firo §cNetwork", "クローズドアルファテスト");
+			}
+		}), 20);
+		*/
 	}
 
 	public function onQuit(PlayerQuitEvent $event) : void{
