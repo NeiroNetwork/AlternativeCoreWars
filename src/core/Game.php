@@ -309,7 +309,7 @@ class Game extends SubPluginBase implements Listener{
 
 	public function onExhaust(PlayerExhaustEvent $event) : void{
 		if($event->getPlayer()?->getWorld() === $this->getWorld()){
-			$event->setAmount($event->getAmount() * (mt_rand(40, 50) / 100));
+			$event->setAmount($event->getAmount() * (mt_rand(30, 40) / 100));
 		}
 	}
 
