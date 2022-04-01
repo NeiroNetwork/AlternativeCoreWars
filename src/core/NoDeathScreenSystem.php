@@ -15,8 +15,6 @@ use pocketmine\player\Player;
 
 class NoDeathScreenSystem extends SubPluginBase implements Listener{
 
-	public static function respawn(Player $player) : void{}
-
 	protected function onEnable() : void{
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 	}
