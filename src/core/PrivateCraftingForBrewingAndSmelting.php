@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace NeiroNetwork\AlternativeCoreWars\core;
 
 use NeiroNetwork\AlternativeCoreWars\block\tile\PrivateBlastFurnace;
+use NeiroNetwork\AlternativeCoreWars\block\tile\PrivateBrewingStand;
 use NeiroNetwork\AlternativeCoreWars\block\tile\PrivateCraftingTileInterface;
 use NeiroNetwork\AlternativeCoreWars\block\tile\PrivateNormalFurnace;
 use NeiroNetwork\AlternativeCoreWars\block\tile\PrivateSmoker;
@@ -13,6 +14,7 @@ use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\BrewingStand;
 use pocketmine\block\Furnace;
+use pocketmine\block\tile\TileFactory;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
@@ -51,7 +53,7 @@ class PrivateCraftingForBrewingAndSmelting extends SubPluginBase implements List
 			"Furnace" => PrivateNormalFurnace::class,
 			"Blast Furnace" => PrivateBlastFurnace::class,
 			"Smoker" => PrivateSmoker::class,
-			// TODO: brewing_stand
+			"Brewing Stand" => PrivateBrewingStand::class,
 		};
 
 		return self::$instance->tiles[$id][$hash][$player->getName()] ??= new $class($p->getWorld(), $p->asVector3(), $player);
@@ -71,7 +73,28 @@ class PrivateCraftingForBrewingAndSmelting extends SubPluginBase implements List
 			}, true);
 		}
 
-		// TODO: brewing_stand
+		BlockFactory::getInstance()->register(new class(...$getParams(VanillaBlocks::BREWING_STAND())) extends BrewingStand{
+			public function onInteract(Item $item, int $face, Vector3 $clickVector, ?Player $player = null) : bool{
+				if(is_null($player) || !PrivateCraftingForBrewingAndSmelting::hookInteract($player, $item, $this, $clickVector, $face)){
+					return parent::onInteract($item, $face, $clickVector, $player);
+				}
+				return true;
+			}
+		}, true);
+	}
+
+	private function hackTileFactory() : void{
+		$factory = TileFactory::getInstance();
+		$property = (new \ReflectionClass($factory))->getProperty("saveNames");
+		$property->setAccessible(true);
+		$saveNames = $property->getValue($factory);
+
+		$saveNames[PrivateNormalFurnace::class] = "Furnace";
+		$saveNames[PrivateBlastFurnace::class] = "BlastFurnace";
+		$saveNames[PrivateSmoker::class] = "Smoker";
+		$saveNames[PrivateBrewingStand::class] = "BrewingStand";
+
+		$property->setValue($factory, $saveNames);
 	}
 
 	protected function onLoad() : void{
@@ -85,6 +108,7 @@ class PrivateCraftingForBrewingAndSmelting extends SubPluginBase implements List
 		}), 1);
 
 		$this->overrideBlocks();
+		$this->hackTileFactory();
 	}
 
 	public function onPlayerLogin(PlayerLoginEvent $event) : void{
