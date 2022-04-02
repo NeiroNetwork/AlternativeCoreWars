@@ -17,8 +17,11 @@ class Leaves extends \pocketmine\block\Leaves{
 		if(($item->getBlockToolType() & BlockToolType::SHEARS) !== 0) return parent::getDropsForCompatibleTool($item);
 
 		$drops = [];
-		if(mt_rand(1, 20) === 1){
+		if(mt_rand(1, 40) === 1){
 			$drops[] = ItemFactory::getInstance()->get(ItemIds::SAPLING, $this->treeType->getMagicNumber());
+		}
+		if(mt_rand(1, 50) === 1){
+			$drops[] = VanillaItems::STICK();
 		}
 		if(($this->treeType->equals(TreeType::OAK()) || $this->treeType->equals(TreeType::DARK_OAK())) && mt_rand(1, 20) === 1){
 			$drops[] = VanillaItems::APPLE();
