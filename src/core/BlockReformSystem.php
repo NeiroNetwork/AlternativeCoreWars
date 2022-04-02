@@ -109,7 +109,7 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 		$add("deepslate_copper_ore", new BlockReformOption(29, 32, "cobbled_deepslate"));
 
 		$add("stone", new BlockReformOption(19, 23, protection: true));
-		$add("deepslate", new BlockReformOption(19, 23));
+		$add("deepslate", new BlockReformOption(20, 24, protection: true));
 		$add("log", new BlockReformOption(17, 23));
 		$add("log2", clone $get("log"));
 		$add("wood", clone $get("log"));
@@ -126,9 +126,15 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 		$add("wheat", new BlockReformOption(21, 31));
 		$add("potatoes", clone $get("wheat"));
 		$add("carrots", clone $get("wheat"));
+		$add("sugarcane", new BlockReformOption(25, 30));
+		$add("nether_wart", new BlockReformOption(32, 38));
+		$add("brown_mushroom", new BlockReformOption(35, 45));
+		$add("red_mushroom", clone $get("brown_mushroom"));
 
 		$add("leaves", new BlockReformOption(18, 24, protection: true));
 		$add("leaves2", clone $get("leaves"));
 		$add("gravel", new BlockReformOption(25, 35, protection: true));
+		$add("cobweb", new BlockReformOption(13, 17, protection: true));
+		$add("sand", new BlockReformOption(19, 24, protection: true));
 	}
 }
