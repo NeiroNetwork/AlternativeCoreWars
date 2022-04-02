@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace NeiroNetwork\AlternativeCoreWars;
 
 use NeiroNetwork\AlternativeCoreWars\core\BlockReformSystem;
+use NeiroNetwork\AlternativeCoreWars\core\CombatAdjustment;
 use NeiroNetwork\AlternativeCoreWars\core\InvisibilityCancellation;
 use NeiroNetwork\AlternativeCoreWars\core\EnderChestsPerWorld;
 use NeiroNetwork\AlternativeCoreWars\core\Game;
@@ -59,6 +60,7 @@ class Main extends PluginBase{
 			InvisibilityCancellation::class,
 			PlayerKillAssistsEventMaker::class,
 			PrivateCraftingForBrewingAndSmelting::class,
+			CombatAdjustment::class,
 		]);
 	}
 
