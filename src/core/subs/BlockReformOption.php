@@ -12,8 +12,7 @@ class BlockReformOption{
 	private int $minTick;
 	private int $maxTick;
 	private Block $block;
-	private int $xpBoost;
-	private \Closure $baseXp;
+	private ?\Closure $xp;
 	private bool $protectionAreaOnly;
 
 	public function __clone() : void{
@@ -24,9 +23,7 @@ class BlockReformOption{
 		float $min,
 		float $max,
 		string|Block $block = "air",
-		int $xpBoost = 1,
-		int|\Closure $baseXp = 0,
-		array $converts = [],	// TODO
+		int|\Closure $xp = null,
 		bool $protection = false,
 	){
 		if($min > $max){
@@ -34,9 +31,8 @@ class BlockReformOption{
 		}
 		$this->minTick = (int) ($min * 20);
 		$this->maxTick = (int) ($max * 20);
-		$this->block = is_string($block) ? forward_static_call([VanillaBlocks::class, str_replace("minecraft:", "", $block)]) : $block;
-		$this->xpBoost = $xpBoost;
-		$this->baseXp = is_int($baseXp) ? fn() => $baseXp : $baseXp;
+		$this->block = is_string($block) ? forward_static_call([VanillaBlocks::class, $block]) : $block;
+		$this->xp = is_null($xp) ? $xp : (is_int($xp) ? fn() => $xp : $xp);
 		$this->protectionAreaOnly = $protection;
 	}
 
@@ -52,12 +48,8 @@ class BlockReformOption{
 		return $this->block;
 	}
 
-	public function getXpBoost() : int{
-		return $this->xpBoost;
-	}
-
-	public function getBaseXp() : int{
-		return ($this->baseXp)();
+	public function getXpClosure() : ?\Closure{
+		return $this->xp;
 	}
 
 	public function isProtectionAreaOnly() : bool{
