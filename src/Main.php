@@ -35,7 +35,7 @@ class Main extends PluginBase{
 	private array $plugins;
 
 	protected function onLoad() : void{
-		self::$translator = new Translator($this, "ja_JP");
+		self::$translator = new Translator($this, "ja_jp");
 
 		$parameters = [
 			$this->getPluginLoader(),
