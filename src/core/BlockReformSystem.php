@@ -27,20 +27,20 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 
 	/**
 	 * @handleCancelled
-	 * @priority HIGH
-	 * FIXME: LOW → HIGH に変えたが影響が分からない
+	 * @priority HIGHEST
+	 * FIXME: LOW → HIGH → HIGHEST に変えたが影響が分からない
 	 */
 	public function onBlockBreak(BlockBreakEvent $event) : void{
-		// 緩い保護あるいはキャンセルされていないイベントである
+		// (このイベントは)緩い保護でのイベント、あるいはキャンセルされていないイベントである
 		if($event->isCancelled() && (!isset($event->protectionType) || $event->protectionType !== ProtectionType::LENIENT)) return;
 
-		if($event->getInstaBreak()) return;		// クリエイティブでない
+		if($event->getInstaBreak()) return;		// (このイベントは)クリエイティブでない
 
 		$position = ($block = $event->getBlock())->getPosition();
 		$world = $position->getWorld();
-		if(Game::getInstance()->getWorld() !== $world) return;	// ゲームワールド内である
+		if(Game::getInstance()->getWorld() !== $world) return;	// (このイベントは)ゲームワールド内である
 
-		if(PlayerBlockTracker::exists($position)) return;	// プレイヤーが置いたブロックではない
+		if(PlayerBlockTracker::exists($position)) return;	// (このイベントは)プレイヤーが置いたブロックではない
 
 		$stringId = LegacyBlockIdToStringIdMap::getInstance()->legacyToString($block->getId());
 		$stringId = str_replace("minecraft:", "", $stringId);
