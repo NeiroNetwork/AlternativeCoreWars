@@ -126,7 +126,7 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 		$add("wheat", new BlockReformOption(21, 31));
 		$add("potatoes", clone $get("wheat"));
 		$add("carrots", clone $get("wheat"));
-		$add("sugarcane", new BlockReformOption(25, 30));
+		$add("reeds", new BlockReformOption(25, 30));
 		$add("nether_wart", new BlockReformOption(32, 38));
 		$add("brown_mushroom", new BlockReformOption(35, 45));
 		$add("red_mushroom", clone $get("brown_mushroom"));
