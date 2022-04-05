@@ -8,9 +8,12 @@ use NeiroNetwork\AlternativeCoreWars\constants\ProtectionType;
 use NeiroNetwork\AlternativeCoreWars\core\subs\BlockReformOption;
 use NeiroNetwork\AlternativeCoreWars\event\GameFinishEvent;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
+use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\BlockLegacyMetadata;
 use pocketmine\data\bedrock\LegacyBlockIdToStringIdMap;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
+use pocketmine\math\Facing;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\world\particle\MobSpawnParticle;
 use pocketmine\world\sound\PopSound;
@@ -45,7 +48,8 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 		$stringId = LegacyBlockIdToStringIdMap::getInstance()->legacyToString($block->getId());
 		$stringId = str_replace("minecraft:", "", $stringId);
 		if(isset($this->reformableBlocks[$stringId])){
-			if($block->getId() === 1 && $block->getMeta() !== 0) return;	// HACK: 純粋な石のみ
+			if($block->getId() === BlockLegacyIds::STONE && $block->getMeta() !== BlockLegacyMetadata::STONE_NORMAL) return;	// HACK: 純粋な石のみ
+			if($block->getId() === BlockLegacyIds::SUGARCANE_BLOCK && $world->getBlock($up = $position->getSide(Facing::UP), addToCache: true)->getId() === BlockLegacyIds::SUGARCANE_BLOCK) $event->getPlayer()->breakBlock($up);	// HACK: 上のサトウキビも壊す
 
 			$option = $this->reformableBlocks[$stringId];
 
