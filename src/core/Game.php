@@ -359,6 +359,7 @@ class Game extends SubPluginBase implements Listener{
 		if($ev->isCancelled()) return;
 
 		$this->nexus[$ev->getTeam()] -= $ev->getDamage();
+		if($this->nexus[$ev->getTeam()] < 0) $this->nexus[$ev->getTeam()] = 0;
 		$this->displayCurrentGameStatus();
 
 		$event->uncancel();
