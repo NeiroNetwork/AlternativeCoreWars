@@ -12,8 +12,10 @@ use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use NeiroNetwork\AlternativeCoreWars\utils\Broadcast;
 use NeiroNetwork\AlternativeCoreWars\utils\PlayerUtils;
 use pocketmine\entity\Human;
+use pocketmine\entity\object\Painting;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
+use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerDropItemEvent;
@@ -23,6 +25,7 @@ use pocketmine\event\player\PlayerItemUseEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\VanillaItems;
+use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\world\Position;
@@ -147,5 +150,15 @@ class Lobby extends SubPluginBase implements Listener{
 
 	private function inLobby(Human $player) : bool{
 		return $player->getWorld() === $this->getServer()->getWorldManager()->getDefaultWorld();
+	}
+
+	/**
+	 * @priority LOWEST
+	 */
+	public function onEntityDamageByEntity(EntityDamageByEntityEvent $event){
+		$player = $event->getDamager();
+		if($event->getEntity() instanceof Painting && $player instanceof Player && !$player->isCreative(true) && $this->inLobby($player)){
+			$event->cancel();
+		}
 	}
 }
