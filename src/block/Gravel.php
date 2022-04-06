@@ -11,7 +11,7 @@ class Gravel extends \pocketmine\block\Gravel{
 
 	public function getDropsForCompatibleTool(Item $item) : array{
 		$drops = mt_rand(1, 4) === 1 ? [VanillaItems::FLINT()] : parent::getDropsForCompatibleTool($item);
-		if(mt_rand(1, 80) === 1) $drops[] = VanillaItems::STRING();
+		if(mt_rand(1, 65) === 1) $drops[] = VanillaItems::STRING();
 		return $drops;
 	}
 }
