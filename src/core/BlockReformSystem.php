@@ -51,7 +51,7 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 		$stringId = str_replace("minecraft:", "", $stringId);
 		if(isset($this->reformableBlocks[$stringId])){
 			if($block->getId() === BlockLegacyIds::STONE && $block->getMeta() !== BlockLegacyMetadata::STONE_NORMAL) return;	// HACK: 純粋な石のみ
-			if($block->getId() === BlockLegacyIds::SUGARCANE_BLOCK && $world->getBlock($up = $position->getSide(Facing::UP), addToCache: true)->getId() === BlockLegacyIds::SUGARCANE_BLOCK) $event->getPlayer()->breakBlock($up);	// HACK: 上のサトウキビも壊す
+			if($world->getBlock($up = $position->getSide(Facing::UP), addToCache: true)->getId() === BlockLegacyIds::SUGARCANE_BLOCK) $event->getPlayer()->breakBlock($up);	// HACK: 上のサトウキビも壊す
 
 			$option = $this->reformableBlocks[$stringId];
 
