@@ -17,6 +17,7 @@ use pocketmine\event\player\PlayerBucketEmptyEvent;
 use pocketmine\event\player\PlayerBucketFillEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\Fertilizer;
+use pocketmine\item\PaintingItem;
 use pocketmine\item\Tool;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
@@ -175,7 +176,7 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 
 		if($event->getAction() === PlayerInteractEvent::RIGHT_CLICK_BLOCK){
 			$item = $event->getItem();
-			if(!($item instanceof Tool || $item instanceof Fertilizer)) return;
+			if(!($item instanceof Tool || $item instanceof Fertilizer || $item instanceof PaintingItem)) return;
 
 			foreach(Game::getInstance()->getArena()->getAllProtections() as $protection){
 				if($this->isVectorIntersects($protection, $position)){
