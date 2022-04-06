@@ -266,7 +266,10 @@ class Game extends SubPluginBase implements Listener{
 		if($player->getWorld() !== $this->getWorld()) return;
 
 		// ゲームから抜けた場合はリスポーンの処理を行わない
-		if($event->getPlayer()->getLastDamageCause()?->getCause() === EntityDamageCause::GAME_QUIT) return;
+		if($event->getPlayer()->getLastDamageCause()?->getCause() === EntityDamageCause::GAME_QUIT){
+			$event->setDeathMessage("");
+			return;
+		}
 
 		Broadcast::title(Translations::YOU_DIED(), " ", recipients: [$player]);
 		$player->getEffects()->add(new EffectInstance(VanillaEffects::BLINDNESS(), 30, visible: false));

@@ -60,11 +60,11 @@ class NoDeathScreenSystem extends SubPluginBase implements Listener{
 				$player->getXpManager()->setXpAndProgress(0, 0.0);
 
 				if($ev->getDeathMessage() !== ""){
-					$player->getServer()->broadcastMessage($ev->getDeathMessage());
-				}
+					$player->getServer()->broadcastMessage($ev->getDeathMessage(), $player->getWorld()->getPlayers());
 
-				$player->broadcastAnimation(new HurtAnimation($player), [$player]);
-				$player->broadcastAnimation(new DeathAnimation($player), $player->getViewers());
+					$player->broadcastAnimation(new HurtAnimation($player), [$player]);
+					$player->broadcastAnimation(new DeathAnimation($player), $player->getViewers());
+				}
 			}
 
 			PlayerUtils::setLimitedSpectator($player);

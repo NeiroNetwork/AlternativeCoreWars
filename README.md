@@ -33,6 +33,7 @@
 - スペクテイターの自殺と奈落ダメージの無効化
 - プレイヤーが死んだ場合 `PlayerDeathEvent` の代わりに `PlayerDeathWihtoutDeathScreenEvent` を呼び出す
 - `PlayerRespawnEvent` は基本的には呼び出されない
+- 死亡したメッセージをプレイヤーがいるワールドのみに送信する
 
 ### SoulboundItemMonitor
 - `InventoryTransactionEvent` を監視して `SlotChangeAction`, `DropItemAction` の二つを偽のアクションへ置き換える
