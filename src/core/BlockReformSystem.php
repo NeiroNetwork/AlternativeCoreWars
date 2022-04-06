@@ -10,6 +10,8 @@ use NeiroNetwork\AlternativeCoreWars\event\GameFinishEvent;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use pocketmine\block\BlockLegacyIds;
 use pocketmine\block\BlockLegacyMetadata;
+use pocketmine\block\Flowable;
+use pocketmine\block\Sugarcane;
 use pocketmine\data\bedrock\LegacyBlockIdToStringIdMap;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
@@ -49,7 +51,8 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 		$stringId = str_replace("minecraft:", "", $stringId);
 		if(isset($this->reformableBlocks[$stringId])){
 			if($block->getId() === BlockLegacyIds::STONE && $block->getMeta() !== BlockLegacyMetadata::STONE_NORMAL) return;	// HACK: 純粋な石のみ
-			if($block->getId() === BlockLegacyIds::SUGARCANE_BLOCK && $world->getBlock($up = $position->getSide(Facing::UP), addToCache: true)->getId() === BlockLegacyIds::SUGARCANE_BLOCK) $event->getPlayer()->breakBlock($up);	// HACK: 上のサトウキビも壊す
+
+			$player = $event->getPlayer();
 
 			$option = $this->reformableBlocks[$stringId];
 
@@ -69,7 +72,6 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 
 			$event->uncancel();
 
-			$player = $event->getPlayer();
 			foreach($event->getDrops() as $dropItem){
 				if(!$dropItem->isNull()){
 					$entity = $player->getWorld()->dropItem($position->add(0.5, 0.5, 0.5), $dropItem, delay: 0);
