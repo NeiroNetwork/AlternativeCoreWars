@@ -8,6 +8,7 @@ use NeiroNetwork\AlternativeCoreWars\block\DoubleTallGrass;
 use NeiroNetwork\AlternativeCoreWars\block\Gravel;
 use NeiroNetwork\AlternativeCoreWars\block\Leaves;
 use NeiroNetwork\AlternativeCoreWars\block\NetherWartPlant;
+use NeiroNetwork\AlternativeCoreWars\block\Sugarcane;
 use NeiroNetwork\AlternativeCoreWars\block\TallGrass;
 use NeiroNetwork\AlternativeCoreWars\block\Wheat;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
@@ -134,6 +135,7 @@ class ServerSpecificationNormalizer extends SubPluginBase implements Listener{
 		$register(Wheat::class, VanillaBlocks::WHEAT());
 		$register(Gravel::class, VanillaBlocks::GRAVEL());
 		$register(NetherWartPlant::class, VanillaBlocks::NETHER_WART());
+		$register(Sugarcane::class, VanillaBlocks::SUGARCANE());
 	}
 
 	public function onWorldLoad(WorldLoadEvent $event) : void{
