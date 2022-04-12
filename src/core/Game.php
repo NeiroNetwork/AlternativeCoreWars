@@ -264,6 +264,12 @@ class Game extends SubPluginBase implements Listener{
 		$player = $event->getPlayer();
 		if($player->getWorld() !== $this->getWorld()) return;
 
+		// プラグインによっては引き起こされないが、権限を持ったプレイヤーがゲームワールド内で死亡する可能性がある
+		if(is_null(TeamReferee::getTeam($player))){
+			Lobby::teleportToLobby($player);
+			return;
+		}
+
 		// ゲームから抜けた場合はリスポーンの処理を行わない
 		if($event->getPlayer()->getLastDamageCause()?->getCause() === EntityDamageCause::GAME_QUIT){
 			$event->setDeathMessage("");
