@@ -160,6 +160,7 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 
 		foreach(Game::getInstance()->getArena()->getAllProtections() as $protection){
 			if($this->isVectorIntersects($protection, $position)){
+				$this->preventGlitches($event->getPlayer());
 				$event->cancel();
 				break;
 			}
