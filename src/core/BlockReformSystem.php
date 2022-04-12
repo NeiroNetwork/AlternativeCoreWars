@@ -139,7 +139,7 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 		$add("leaves", new BlockReformOption(18, 24, protection: true));
 		$add("leaves2", clone $get("leaves"));
 		$add("gravel", new BlockReformOption(25, 35, xp: fn() => mt_rand(0, 1), protection: true));
-		$add("cobweb", new BlockReformOption(13, 17, protection: true));
+		$add("cobweb", new BlockReformOption(40, 50, protection: true));
 		$add("sand", new BlockReformOption(19, 24, xp: fn() => mt_rand(0, 1), protection: true));
 	}
 }
