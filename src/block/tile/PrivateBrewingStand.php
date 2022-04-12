@@ -8,10 +8,7 @@ use pocketmine\block\inventory\BrewingStandInventory;
 use pocketmine\block\tile\BrewingStand;
 use pocketmine\block\utils\BrewingStandSlot;
 use pocketmine\crafting\BrewingRecipe;
-use pocketmine\event\block\BrewingFuelUseEvent;
 use pocketmine\event\block\BrewItemEvent;
-use pocketmine\item\Item;
-use pocketmine\item\VanillaItems;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\ContainerSetDataPacket;
@@ -83,16 +80,9 @@ class PrivateBrewingStand extends BrewingStand implements PrivateCraftingTileInt
 		return $this->inventory;
 	}
 
-	private function checkFuel(Item $item) : void{
-		$ev = new BrewingFuelUseEvent($this);
-		if(!$item->equals(VanillaItems::BLAZE_POWDER(), true, false)) $ev->cancel();
-		$ev->call();
-		if($ev->isCancelled()) return;
-
-		$item->pop();
-		$this->inventory->setItem(BrewingStandInventory::SLOT_FUEL, $item);
-
-		$this->maxFuelTime = $this->remainingFuelTime = $ev->getFuelTime();
+	private function checkFuel() : void{
+		// プライベート醸造台は燃料(ブレイズパウダー)が要らない
+		$this->maxFuelTime = $this->remainingFuelTime = 20;
 	}
 
 	/**
@@ -125,13 +115,12 @@ class PrivateBrewingStand extends BrewingStand implements PrivateCraftingTileInt
 
 		$ret = false;
 
-		$fuel = $this->inventory->getItem(BrewingStandInventory::SLOT_FUEL);
 		$ingredient = $this->inventory->getItem(BrewingStandInventory::SLOT_INGREDIENT);
 
 		$recipes = $this->getBrewableRecipes();
 		$canBrew = count($recipes) !== 0;
 
-		if($this->remainingFuelTime <= 0 && $canBrew) $this->checkFuel($fuel);
+		if($this->remainingFuelTime <= 0 && $canBrew) $this->checkFuel();
 
 		if($this->remainingFuelTime > 0){
 			if($canBrew){
