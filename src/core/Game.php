@@ -42,7 +42,6 @@ use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\Armor;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
-use pocketmine\item\VanillaItems;
 use pocketmine\network\mcpe\protocol\BossEventPacket;
 use pocketmine\network\mcpe\protocol\types\BossBarColor;
 use pocketmine\player\GameMode;
@@ -330,12 +329,22 @@ class Game extends SubPluginBase implements Listener{
 
 	/**
 	 * @handleCancelled
+	 * @priority LOWEST
+	 */
+	public function handleCancelledBlockBreakEvent(BlockBreakEvent $event) : void{
+		if($event->isCancelled()){
+			$event->cancelledByPmmp = true;
+		}
+	}
+
+	/**
+	 * @handleCancelled
 	 * @priority HIGHEST
 	 */
 	public function onBreakNexus(BlockBreakEvent $event) : void{
 		$player = $event->getPlayer();
 		$breaker = TeamReferee::getTeam($player);
-		if(!$this->isRunning() || !$event->isCancelled() || !$player->isSurvival(true) || $breaker === null) return;
+		if(!$this->isRunning() || isset($event->cancelledByPmmp) || !$player->isSurvival(true) || $breaker === null) return;
 
 		$block = $event->getBlock();
 		$isNexusBroken = false;
