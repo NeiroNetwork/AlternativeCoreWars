@@ -84,12 +84,7 @@ class ServerSpecificationNormalizer extends SubPluginBase implements Listener{
 		};
 
 		$commands = [
-			"ban",
-			"ban-ip",
-			"banlist",
 			"defaultgamemode",
-			"pardon",
-			"pardon-ip",
 			"save-all",
 			"save-off",
 			"save-on",
