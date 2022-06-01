@@ -18,7 +18,7 @@
 - プレイヤーデータの保存を無効化
 - RandomTickSpeedを0へ変更
 #### コマンドの変更
-- コマンド `ban`, `ban-ip`, `banlist`, `pardon`, `pardon-ip`, `defaultgamemode`, `save-all`, `save-on`, `save-off`, `setworldspawn`, `spawnpoint` を無効化
+- コマンド `defaultgamemode`, `save-all`, `save-on`, `save-off`, `setworldspawn`, `spawnpoint` を無効化
 - コマンド `op`, `dumpmemory` の実行権限をコンソールのみに変更
 #### 既存のブロック、アイテムの置き換え
 ##### ブロック
