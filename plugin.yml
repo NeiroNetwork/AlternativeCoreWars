@@ -8,5 +8,4 @@ depend:
   - VoidGenerator
   - NoWorldCorruption
   - ExperimentalFeatures
-  - Fireworks
   - pmforms
