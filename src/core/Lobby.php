@@ -151,14 +151,4 @@ class Lobby extends SubPluginBase implements Listener{
 	private function inLobby(Human $player) : bool{
 		return $player->getWorld() === $this->getServer()->getWorldManager()->getDefaultWorld();
 	}
-
-	/**
-	 * @priority LOWEST
-	 */
-	public function onEntityDamageByEntity(EntityDamageByEntityEvent $event){
-		$player = $event->getDamager();
-		if($event->getEntity() instanceof Painting && $player instanceof Player && !$player->isCreative(true) && $this->inLobby($player)){
-			$event->cancel();
-		}
-	}
 }
