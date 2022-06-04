@@ -21,7 +21,7 @@ class Leaves extends \pocketmine\block\Leaves{
 			$drops[] = ItemFactory::getInstance()->get(ItemIds::SAPLING, $this->treeType->getMagicNumber());
 		}
 		if(mt_rand(1, 50) === 1){
-			$drops[] = VanillaItems::STICK();
+			$drops[] = VanillaItems::STICK()->setCount(mt_rand(1, 2));
 		}
 		if(($this->treeType->equals(TreeType::OAK()) || $this->treeType->equals(TreeType::DARK_OAK())) && mt_rand(1, 20) === 1){
 			$drops[] = VanillaItems::APPLE();
