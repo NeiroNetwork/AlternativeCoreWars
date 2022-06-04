@@ -100,8 +100,6 @@ class ServerSpecificationNormalizer extends SubPluginBase implements Listener{
 		$console = PermissionManager::getInstance()->getPermission(DefaultPermissions::ROOT_CONSOLE);
 		$operator->removeChild(DefaultPermissionNames::COMMAND_OP_GIVE);
 		$console->addChild(DefaultPermissionNames::COMMAND_OP_GIVE, true);
-		//$operator->removeChild(DefaultPermissionNames::COMMAND_OP_TAKE);
-		//$console->addChild(DefaultPermissionNames::COMMAND_OP_TAKE, true);
 		$operator->removeChild(DefaultPermissionNames::COMMAND_DUMPMEMORY);
 		$console->addChild(DefaultPermissionNames::COMMAND_DUMPMEMORY, true);
 	}
@@ -110,15 +108,6 @@ class ServerSpecificationNormalizer extends SubPluginBase implements Listener{
 		$register = function(string $class, Block $base, array $add = []) : void{
 			assert(is_a($class, Block::class, true));
 			BlockFactory::getInstance()->register(new $class($base->getIdInfo(), $base->getName(), $base->getBreakInfo(), ...$add), true);
-			/* (このコードいるのか分からない)
-			for($meta = 0; $meta < 1 << Block::INTERNAL_METADATA_BITS; ++$meta){
-				$block = BlockFactory::getInstance()->get($base->getId(), $meta);
-				if(!$block instanceof UnknownBlock && $block->getName() === $base->getName()){
-					$info = new BlockIdentifier($base->getId(), $meta, $base->getIdInfo()->getItemId(), $base->getIdInfo()->getTileClass());
-					BlockFactory::getInstance()->register(new $class($info, $base->getName(), $base->getBreakInfo()), true);
-				}
-			}
-			*/
 		};
 
 		$register(TallGrass::class, VanillaBlocks::FERN());
