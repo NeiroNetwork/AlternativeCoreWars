@@ -16,7 +16,6 @@
 - オートセーブ無効化
 - サーバーデフォルトゲームモードをアドベンチャーに設定
 - プレイヤーデータの保存を無効化
-- RandomTickSpeedを0へ変更
 #### コマンドの変更
 - コマンド `defaultgamemode`, `save-all`, `save-on`, `save-off`, `setworldspawn`, `spawnpoint` を無効化
 - コマンド `op`, `dumpmemory` の実行権限をコンソールのみに変更

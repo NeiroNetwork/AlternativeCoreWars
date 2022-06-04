@@ -52,7 +52,6 @@ class ServerSpecificationNormalizer extends SubPluginBase implements Listener{
 		$propertyCache->setAccessible(true);
 		$propertyCache->setValue($group, [
 			"player.save-player-data" => false,
-			"chunk-ticking.blocks-per-subchunk-per-tick" => 0,
 			"auto-report.enabled" => false,
 			"anonymous-statistics.enabled" => false,
 		]);
