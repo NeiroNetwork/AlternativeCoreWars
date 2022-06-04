@@ -30,7 +30,7 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 
 	private function preventGlitches(Player $player) : void{
 		$player->setGamemode(GameMode::ADVENTURE());
-		// ローカルで試した遅延なしでも特に問題は見られなかったが、一応遅延させて実行しておく
+		// ローカルで試した結果、遅延なしでも特に問題は見られなかったが、一応遅延させて実行しておく
 		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(fn() => $player->setForceMovementUpdate(true)), 1);
 		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use ($player){
 			if($player->isOnline() && $player->isAdventure(true)) $player->setGamemode(GameMode::SURVIVAL());
