@@ -15,7 +15,6 @@ use pocketmine\block\Sugarcane;
 use pocketmine\data\bedrock\LegacyBlockIdToStringIdMap;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
-use pocketmine\math\Facing;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\world\particle\MobSpawnParticle;
 use pocketmine\world\sound\PopSound;

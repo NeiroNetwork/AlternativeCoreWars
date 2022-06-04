@@ -8,12 +8,9 @@ use NeiroNetwork\AlternativeCoreWars\constants\ProtectionType;
 use NeiroNetwork\AlternativeCoreWars\event\GameFinishEvent;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use pocketmine\block\CraftingTable;
-use pocketmine\block\Fire;
 use pocketmine\block\Flowable;
 use pocketmine\event\block\BlockBreakEvent;
-use pocketmine\event\block\BlockBurnEvent;
 use pocketmine\event\block\BlockPlaceEvent;
-use pocketmine\event\block\BlockSpreadEvent;
 use pocketmine\event\block\StructureGrowEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerBucketEmptyEvent;
@@ -223,36 +220,6 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 		foreach($event->getTransaction()->getBlocks() as [$x, $y, $z, $block]){
 			$position->x = $x; $position->y = $y; $position->z = $z;
 			PlayerBlockTracker::add($position);
-		}
-	}
-
-	public function onBlockBurn(BlockBurnEvent $event) : void{
-		$position = $event->getBlock()->getPosition();
-		if(Game::getInstance()->getWorld() !== $position->getWorld()) return;
-
-		foreach(Game::getInstance()->getArena()->getAllProtections() as $protection){
-			if($this->isVectorIntersects($protection, $position)){
-				$event->cancel();
-				break;
-			}
-		}
-	}
-
-	public function onBlockSpread(BlockSpreadEvent $event) : void{
-		$block = $event->getBlock();
-		$position = $block->getPosition();
-		if(Game::getInstance()->getWorld() !== $position->getWorld()) return;
-
-		if(!$block instanceof Fire){
-			$event->cancel();
-			return;
-		}
-
-		foreach(Game::getInstance()->getArena()->getAllProtections() as $protection){
-			if($this->isVectorIntersects($protection, $position)){
-				$event->cancel();
-				break;
-			}
 		}
 	}
 }
