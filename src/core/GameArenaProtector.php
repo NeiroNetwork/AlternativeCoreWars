@@ -7,11 +7,13 @@ namespace NeiroNetwork\AlternativeCoreWars\core;
 use NeiroNetwork\AlternativeCoreWars\constants\ProtectionType;
 use NeiroNetwork\AlternativeCoreWars\event\GameFinishEvent;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
+use pocketmine\block\Block;
 use pocketmine\block\CraftingTable;
 use pocketmine\block\Flowable;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\block\StructureGrowEvent;
+use pocketmine\event\entity\EntityExplodeEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerBucketEmptyEvent;
 use pocketmine\event\player\PlayerBucketFillEvent;
@@ -221,5 +223,17 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 			$position->x = $x; $position->y = $y; $position->z = $z;
 			PlayerBlockTracker::add($position);
 		}
+	}
+
+	public function onEntityExplode(EntityExplodeEvent $event) : void{
+		if(Game::getInstance()->getWorld() !== $event->getPosition()->getWorld()) return;
+
+		$blocks = array_filter($event->getBlockList(), function(Block $block) : bool{
+			foreach(Game::getInstance()->getArena()->getAllProtections() as $protection){
+				if($this->isVectorIntersects($protection, $block->getPosition())) return false;
+			}
+			return true;
+		});
+		$event->setBlockList($blocks);
 	}
 }
