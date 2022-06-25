@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace NeiroNetwork\AlternativeCoreWars;
 
 use NeiroNetwork\AlternativeCoreWars\core\BlockReformSystem;
+use NeiroNetwork\AlternativeCoreWars\core\ChatRouter;
 use NeiroNetwork\AlternativeCoreWars\core\CombatAdjustment;
 use NeiroNetwork\AlternativeCoreWars\core\InvisibilityCancellation;
 use NeiroNetwork\AlternativeCoreWars\core\EnderChestsPerWorld;
@@ -60,6 +61,7 @@ class Main extends PluginBase{
 			PlayerKillAssistsEventMaker::class,
 			PrivateCraftingForBrewingAndSmelting::class,
 			CombatAdjustment::class,
+			ChatRouter::class,
 		]);
 	}
 
