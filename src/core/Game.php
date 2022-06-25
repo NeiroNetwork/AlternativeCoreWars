@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace NeiroNetwork\AlternativeCoreWars\core;
 
-use BlockHorizons\Fireworks\entity\FireworksRocket;
-use BlockHorizons\Fireworks\item\Fireworks;
 use dktapps\pmforms\MenuForm;
 use dktapps\pmforms\MenuOption;
 use NeiroNetwork\AlternativeCoreWars\constants\BroadcastChannels;
@@ -28,6 +26,10 @@ use NeiroNetwork\AlternativeCoreWars\utils\PlayerUtils;
 use NeiroNetwork\AlternativeCoreWars\utils\SoulboundItem;
 use NeiroNetwork\AlternativeCoreWars\utils\Utilities;
 use NeiroNetwork\AlternativeCoreWars\world\NexusDestroySound;
+use NeiroNetwork\ExperimentalFeatures\feature\v1_2\entity\FireworksRocket;
+use NeiroNetwork\ExperimentalFeatures\feature\v1_2\item\FireworkColor;
+use NeiroNetwork\ExperimentalFeatures\feature\v1_2\item\Fireworks;
+use NeiroNetwork\ExperimentalFeatures\feature\v1_2\item\FireworkType;
 use pocketmine\block\DiamondOre;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\entity\effect\EffectInstance;
@@ -206,11 +208,11 @@ class Game extends SubPluginBase implements Listener{
 	private function startGameEndPerformance(?string $victor) : void{
 		/** @var Fireworks $fireworks */
 		$fireworks = ItemFactory::getInstance()->get(ItemIds::FIREWORKS);
-		$fireworks->addExplosion(Fireworks::TYPE_SMALL_SPHERE,
+		$fireworks->addExplosion(FireworkType::SMALL_SPHERE(),
 			match($victor){
-				Teams::RED => Fireworks::COLOR_RED,
-				Teams::BLUE => Fireworks::COLOR_BLUE,
-				default => Fireworks::COLOR_WHITE,
+				Teams::RED => FireworkColor::RED(),
+				Teams::BLUE => FireworkColor::BLUE(),
+				default => FireworkColor::WHITE(),
 			}
 		);
 
