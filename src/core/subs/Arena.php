@@ -73,6 +73,7 @@ class Arena{
 	}
 
 	private function unloadWorld() : void{
+		$this->world->setAutoSave(false);
 		if($this->world->isLoaded()){
 			$this->server->getWorldManager()->unloadWorld($this->world);
 		}
