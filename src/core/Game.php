@@ -124,7 +124,9 @@ class Game extends SubPluginBase implements Listener{
 		$player->teleport($position ?? reset($this->getArena()->getSpawns()[$team]));
 
 		if(class_exists("\NeiroNetwork\Kits\Main")){
-			\NeiroNetwork\Kits\Main::getData()->getTableByPlayer($player)->setInventory();
+			$table = \NeiroNetwork\Kits\Main::getData()->getTableByPlayer($player);
+			$table->setInventory();
+			$table->giveEffects();
 		}
 
 		foreach($player->getInventory()->getContents() as $index => $item){
