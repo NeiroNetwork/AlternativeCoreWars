@@ -125,6 +125,10 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 		$add("warped_hyphae", clone $get("crimson_hyphae"));
 		$add("stripped_warped_stem", clone $get("stripped_crimson_stem"));
 		$add("stripped_warped_hyphae", clone $get("stripped_crimson_hyphae"));
+		$add("mangrove_log", clone $get("log"));
+		$add("mangrove_wood", clone $get("wood"));
+		$add("stripped_mangrove_log", clone $get("log"));
+		$add("stripped_mangrove_wood", clone $get("wood"));
 
 		$add("melon_block", new BlockReformOption(8, 15, xp: fn() => mt_rand(0, 1)));
 		$add("wheat", new BlockReformOption(21, 31));
@@ -137,6 +141,7 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 
 		$add("leaves", new BlockReformOption(18, 24, protection: true));
 		$add("leaves2", clone $get("leaves"));
+		$add("mangrove_leaves", clone $get("leaves"));
 		$add("gravel", new BlockReformOption(25, 35, xp: fn() => mt_rand(0, 1), protection: true));
 		$add("cobweb", new BlockReformOption(40, 50, protection: true));
 		$add("sand", new BlockReformOption(19, 24, xp: fn() => mt_rand(0, 1), protection: true));
