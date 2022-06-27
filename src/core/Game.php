@@ -121,7 +121,7 @@ class Game extends SubPluginBase implements Listener{
 		$team = TeamReferee::getTeam($player);
 		$player->setNameTag(Teams::textColor($team) . $player->getName() . TextFormat::RESET);
 		$player->setDisplayName(Teams::textColor($team) . $player->getName() . TextFormat::RESET);
-		$player->teleport($position ?? reset($this->getArena()->getSpawns()[$team]));
+		$player->teleport($position ?? reset($this->getArena()->getSpawns($team)));
 
 		if(class_exists("\NeiroNetwork\Kits\Main")){
 			$table = \NeiroNetwork\Kits\Main::getData()->getTableByPlayer($player);
@@ -291,7 +291,7 @@ class Game extends SubPluginBase implements Listener{
 		$isRespawned = false;
 		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use ($player, &$isRespawned) : void{
 			if(!$player->isOnline() || is_null($team = TeamReferee::getTeam($player))) return;
-			$spawns = Game::getInstance()->getArena()->getTeamSpawns($team);
+			$spawns = Game::getInstance()->getArena()->getSpawns($team);
 			$player->sendForm(new MenuForm(
 				Main::getTranslator()->translate(Translations::FORM_RESPAWN_TITLE(), $player),
 				Main::getTranslator()->translate(Translations::FORM_RESPAWN_CONTENT(), $player),
@@ -358,7 +358,7 @@ class Game extends SubPluginBase implements Listener{
 
 		$block = $event->getBlock();
 		$isNexusBroken = false;
-		foreach($this->getArena()->getNexuses() as $team => $position){
+		foreach($this->getArena()->getNexus() as $team => $position){
 			if($block->getPosition()->equals($position)){
 				if(!$isNexusBroken = $breaker !== $team){
 					Broadcast::message(Translations::DESTROY_ALLY_NEXUS(), [$player]);

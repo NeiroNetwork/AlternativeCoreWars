@@ -18,7 +18,7 @@ class ArenaData{
 	/** @var Position[][] */
 	private array $spawns;
 	/** @var Position[] */
-	private array $nexuses;
+	private array $nexus;
 	/** @var AxisAlignedBB[] */
 	private array $lenientProtections;
 	/** @var AxisAlignedBB[] */
@@ -47,8 +47,8 @@ class ArenaData{
 			}
 		}
 
-		foreach($data["nexuses"] as $team => $nexus){
-			$this->nexuses[$team] = Position::fromObject((new Vector3(...$nexus))->floor(), $world);
+		foreach($data["nexus"] as $team => $nexus){
+			$this->nexus[$team] = Position::fromObject((new Vector3(...$nexus))->floor(), $world);
 		}
 
 		$aabbFunction = function(array $protection) : AxisAlignedBB{
@@ -81,24 +81,17 @@ class ArenaData{
 	}
 
 	/**
-	 * @return Position[][]
+	 * @return Position[][]|Position[]
 	 */
-	public function getSpawns() : array{
-		return $this->spawns;
+	public function getSpawns(string $team = null) : array{
+		return is_null($team) ? $this->spawns : $this->spawns[$team];
 	}
 
 	/**
-	 * @return Position[]
+	 * @return Position[]|Position
 	 */
-	public function getTeamSpawns(string $team) : array{
-		return $this->spawns[$team];
-	}
-
-	/**
-	 * @return Position[]
-	 */
-	public function getNexuses() : array{
-		return $this->nexuses;
+	public function getNexus(string $team = null) : array|Position{
+		return is_null($team) ? $this->nexus : $this->nexus[$team];
 	}
 
 	/**
