@@ -122,7 +122,7 @@ class Game extends SubPluginBase implements Listener{
 		$player->setNameTag(Teams::textColor($team) . $player->getName() . TextFormat::RESET);
 		$player->setDisplayName(Teams::textColor($team) . $player->getName() . TextFormat::RESET);
 		$spawns = $this->getArena()->getSpawns($team);
-		$player->teleport($position ?? $spawns[array_key_first($spawns)]);
+		$player->teleport($position ?? reset($spawns));
 
 		if(class_exists("\NeiroNetwork\Kits\Main")){
 			$table = \NeiroNetwork\Kits\Main::getData()->getTableByPlayer($player);
