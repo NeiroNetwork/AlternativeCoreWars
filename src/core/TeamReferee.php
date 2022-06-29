@@ -8,6 +8,8 @@ use NeiroNetwork\AlternativeCoreWars\constants\BroadcastChannels;
 use NeiroNetwork\AlternativeCoreWars\constants\Teams;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use NeiroNetwork\AlternativeCoreWars\utils\Utilities;
+use pocketmine\entity\projectile\Arrow;
+use pocketmine\event\entity\EntityDamageByChildEntityEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerQuitEvent;
@@ -115,6 +117,12 @@ class TeamReferee extends SubPluginBase implements Listener{
 		$team2 = self::getTeam($victim);
 		if($team1 !== null && $team2 !== null && $team1 === $team2){
 			$event->cancel();
+			if($event instanceof EntityDamageByChildEntityEvent){
+				$child = $event->getChild();
+				if($child instanceof Arrow){
+					$child->setPunchKnockback(0.0);
+				}
+			}
 		}
 	}
 }
