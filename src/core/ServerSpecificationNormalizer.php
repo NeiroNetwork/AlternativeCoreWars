@@ -116,7 +116,6 @@ class ServerSpecificationNormalizer extends SubPluginBase implements Listener{
 		$register(Leaves::class, VanillaBlocks::OAK_LEAVES(), [TreeType::OAK()]);
 		$register(Leaves::class, VanillaBlocks::DARK_OAK_LEAVES(), [TreeType::DARK_OAK()]);
 		$register(Wheat::class, VanillaBlocks::WHEAT());
-		$register(Gravel::class, VanillaBlocks::GRAVEL());
 		$register(NetherWartPlant::class, VanillaBlocks::NETHER_WART());
 		$register(Sugarcane::class, VanillaBlocks::SUGARCANE());
 	}
