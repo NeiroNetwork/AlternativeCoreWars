@@ -10,8 +10,6 @@ use NeiroNetwork\AlternativeCoreWars\event\GameFinishEvent;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use pocketmine\block\BlockLegacyIds;
 use pocketmine\block\BlockLegacyMetadata;
-use pocketmine\block\Flowable;
-use pocketmine\block\Sugarcane;
 use pocketmine\data\bedrock\LegacyBlockIdToStringIdMap;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
