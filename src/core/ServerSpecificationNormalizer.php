@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace NeiroNetwork\AlternativeCoreWars\core;
 
 use NeiroNetwork\AlternativeCoreWars\block\DoubleTallGrass;
-use NeiroNetwork\AlternativeCoreWars\block\Gravel;
 use NeiroNetwork\AlternativeCoreWars\block\Leaves;
 use NeiroNetwork\AlternativeCoreWars\block\NetherWartPlant;
 use NeiroNetwork\AlternativeCoreWars\block\Sugarcane;
