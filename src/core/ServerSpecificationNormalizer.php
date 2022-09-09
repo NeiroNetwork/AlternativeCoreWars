@@ -17,6 +17,8 @@ use pocketmine\block\utils\TreeType;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\event\Listener;
 use pocketmine\event\world\WorldLoadEvent;
+use pocketmine\item\Item;
+use pocketmine\item\VanillaItems;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\permission\DefaultPermissions;
 use pocketmine\permission\PermissionManager;
@@ -33,6 +35,7 @@ class ServerSpecificationNormalizer extends SubPluginBase implements Listener{
 		$this->removeFutileCommands();
 		$this->reduceCommandPermissions();
 		$this->overwriteBlocks();
+		$this->modifyCraftingRecipes();
 	}
 
 	protected function onEnable() : void{
@@ -117,6 +120,27 @@ class ServerSpecificationNormalizer extends SubPluginBase implements Listener{
 		$register(Wheat::class, VanillaBlocks::WHEAT());
 		$register(NetherWartPlant::class, VanillaBlocks::NETHER_WART());
 		$register(Sugarcane::class, VanillaBlocks::SUGARCANE());
+	}
+
+	private function modifyCraftingRecipes() : void{
+		$craftingManager = $this->getServer()->getCraftingManager();
+		$property = (new \ReflectionClass($craftingManager))->getProperty("shapedRecipes");
+		$property->setAccessible(true);
+		$shapedRecipes = $property->getValue($craftingManager);
+
+		$hashOutputs = function(Item $item) use ($craftingManager) : string{
+			$method = (new \ReflectionClass($craftingManager))->getMethod("hashOutputs");
+			$method->setAccessible(true);
+			return $method->invoke($craftingManager, [$item]);
+		};
+
+		$hashes = [
+			$hashOutputs(VanillaItems::ARROW()->setCount(4)),
+			$hashOutputs(VanillaItems::BOW()),
+		];
+		foreach($hashes as $hash) unset($shapedRecipes[$hash]);
+
+		$property->setValue($craftingManager, $shapedRecipes);
 	}
 
 	public function onWorldLoad(WorldLoadEvent $event) : void{
