@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace NeiroNetwork\AlternativeCoreWars\core;
 
 use NeiroNetwork\AlternativeCoreWars\constants\ProtectionType;
-use NeiroNetwork\AlternativeCoreWars\event\GameFinishEvent;
+use NeiroNetwork\AlternativeCoreWars\event\GameCleanupEvent;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use pocketmine\block\Block;
 use pocketmine\block\CraftingTable;
@@ -52,7 +52,7 @@ class GameArenaProtector extends SubPluginBase implements Listener{
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 	}
 
-	public function onGameFinish(GameFinishEvent $event) : void{
+	public function onGameFinish(GameCleanupEvent $event) : void{
 		$this->getScheduler()->cancelAllTasks();
 	}
 

@@ -6,7 +6,7 @@ namespace NeiroNetwork\AlternativeCoreWars\core;
 
 use NeiroNetwork\AlternativeCoreWars\constants\ProtectionType;
 use NeiroNetwork\AlternativeCoreWars\core\subs\BlockReformOption;
-use NeiroNetwork\AlternativeCoreWars\event\GameFinishEvent;
+use NeiroNetwork\AlternativeCoreWars\event\GameCleanupEvent;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use pocketmine\block\BlockLegacyIds;
 use pocketmine\block\BlockLegacyMetadata;
@@ -81,7 +81,7 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 		}
 	}
 
-	public function onGameFinish(GameFinishEvent $event) : void{
+	public function onGameFinish(GameCleanupEvent $event) : void{
 		$this->getScheduler()->cancelAllTasks();
 	}
 

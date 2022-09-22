@@ -7,5 +7,5 @@ namespace NeiroNetwork\AlternativeCoreWars\event;
 /**
  * ゲームが完全に終了し、ゲームの片づけが行われる時に呼ばれるイベント
  */
-class GameFinishEvent extends GameEvent{
+class GameCleanupEvent extends GameEvent{
 }

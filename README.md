@@ -4,8 +4,8 @@
 ## イベント一覧
 | イベント             | 説明                |
 |------------------|-------------------|
-| GameEndEvent     | ゲームが終了した時のイベント    |
-| GameFinishEvent  | ゲームの後片付けを行うイベント   |
+| GameCleanupEvent | ゲームの後片付けを行うイベント   |
+| GameSettleEvent  | ゲームが決着した時のイベント    |
 | GameStartEvent   | ゲームが始まった時のイベント    |
 | NexusDamageEvent | ネクサスが破壊されたときのイベント |
 | PhaseStartEvent  | フェーズが始まった時のイベント   |

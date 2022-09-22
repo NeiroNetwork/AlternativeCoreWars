@@ -13,8 +13,8 @@ use NeiroNetwork\AlternativeCoreWars\constants\Translations;
 use NeiroNetwork\AlternativeCoreWars\core\subs\Arena;
 use NeiroNetwork\AlternativeCoreWars\core\subs\ArenaData;
 use NeiroNetwork\AlternativeCoreWars\core\subs\GameQueue;
-use NeiroNetwork\AlternativeCoreWars\event\GameEndEvent;
-use NeiroNetwork\AlternativeCoreWars\event\GameFinishEvent;
+use NeiroNetwork\AlternativeCoreWars\event\GameSettleEvent;
+use NeiroNetwork\AlternativeCoreWars\event\GameCleanupEvent;
 use NeiroNetwork\AlternativeCoreWars\event\GameStartEvent;
 use NeiroNetwork\AlternativeCoreWars\event\NexusDamageEvent;
 use NeiroNetwork\AlternativeCoreWars\event\PhaseStartEvent;
@@ -148,14 +148,14 @@ class Game extends SubPluginBase implements Listener{
 		$this->getScheduler()->cancelAllTasks();
 		$this->running = false;
 
-		$ev = new GameEndEvent($this, $victor);
+		$ev = new GameSettleEvent($this, $victor);
 		$ev->call();
 
 		$this->startGameEndPerformance($ev->getVictor());
 	}
 
 	private function cleanUp() : void{
-		(new GameFinishEvent($this))->call();
+		(new GameCleanupEvent($this))->call();
 
 		$this->getScheduler()->cancelAllTasks();
 

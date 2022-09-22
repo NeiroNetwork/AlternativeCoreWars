@@ -7,9 +7,9 @@ namespace NeiroNetwork\AlternativeCoreWars\event;
 use NeiroNetwork\AlternativeCoreWars\core\Game;
 
 /**
- * ゲームの進行が不可能になった(=ゲームが終わった)時のイベント
+ * ゲームの決着がついた時のイベント
  */
-class GameEndEvent extends GameEvent{
+class GameSettleEvent extends GameEvent{
 
 	public function __construct(
 		Game $game,
