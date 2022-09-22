@@ -395,7 +395,8 @@ class Game extends SubPluginBase implements Listener{
 		// TODO: メッセージなど送信
 		// TODO: ネクサス破壊の演出
 		Broadcast::sound("note.harp", pitch: 1.6, recipients: BroadcastChannels::fromTeam($ev->getTeam()));
-		$position->getWorld()->addSound($position->add(0.5, 0.5, 0.5), $isTeamDied ? new ExplodeSound() : new NexusDestroySound());
+		$position->getWorld()->addSound($position->add(0.5, 0.5, 0.5), new NexusDestroySound());
+		if($isTeamDied) Broadcast::sound("random.explode", recipients: $position->getWorld()->getPlayers());
 
 		$aliveTeams = array_filter($this->nexus, fn($health) => $health > 0);
 		if(count($aliveTeams) === 1){
