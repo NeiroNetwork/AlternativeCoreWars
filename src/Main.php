@@ -16,6 +16,7 @@ use NeiroNetwork\AlternativeCoreWars\core\PlayerBlockTracker;
 use NeiroNetwork\AlternativeCoreWars\core\GameArenaProtector;
 use NeiroNetwork\AlternativeCoreWars\core\PlayerKillAssistsEventMaker;
 use NeiroNetwork\AlternativeCoreWars\core\PrivateCraftingForBrewingAndSmelting;
+use NeiroNetwork\AlternativeCoreWars\core\RewardGiver;
 use NeiroNetwork\AlternativeCoreWars\core\ServerSpecificationNormalizer;
 use NeiroNetwork\AlternativeCoreWars\core\SoulboundItemMonitor;
 use NeiroNetwork\AlternativeCoreWars\core\TeamReferee;
@@ -62,6 +63,7 @@ class Main extends PluginBase{
 			PrivateCraftingForBrewingAndSmelting::class,
 			CombatAdjustment::class,
 			ChatRouter::class,
+			RewardGiver::class,
 		]);
 	}
 
