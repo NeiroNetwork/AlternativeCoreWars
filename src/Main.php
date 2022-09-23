@@ -18,6 +18,7 @@ use NeiroNetwork\AlternativeCoreWars\core\PlayerKillAssistsEventMaker;
 use NeiroNetwork\AlternativeCoreWars\core\PrivateCraftingForBrewingAndSmelting;
 use NeiroNetwork\AlternativeCoreWars\core\RewardGiver;
 use NeiroNetwork\AlternativeCoreWars\core\ServerSpecificationNormalizer;
+use NeiroNetwork\AlternativeCoreWars\core\ShopCreator;
 use NeiroNetwork\AlternativeCoreWars\core\SoulboundItemMonitor;
 use NeiroNetwork\AlternativeCoreWars\core\TeamReferee;
 use NeiroNetwork\TranslationLibrary\Translator;
@@ -64,6 +65,7 @@ class Main extends PluginBase{
 			CombatAdjustment::class,
 			ChatRouter::class,
 			RewardGiver::class,
+			ShopCreator::class,
 		]);
 	}
 
