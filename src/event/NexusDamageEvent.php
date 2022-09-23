@@ -16,7 +16,7 @@ class NexusDamageEvent extends GameEvent implements Cancellable{
 		Game $game,
 		private string $team,
 		private int $damage = 1,
-		private ?Player $player = null,
+		private ?Player $damager = null,
 	){
 		parent::__construct($game);
 	}
@@ -29,7 +29,7 @@ class NexusDamageEvent extends GameEvent implements Cancellable{
 		return $this->damage;
 	}
 
-	public function getPlayer() : ?Player{
-		return $this->player;
+	public function getDamager() : ?Player{
+		return $this->damager;
 	}
 }
