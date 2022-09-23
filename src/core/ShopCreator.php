@@ -59,7 +59,7 @@ class ShopCreator extends SubPluginBase{
 			(new RewardEntry("エンチャントのビン", "エンチャントのビン x 64", uniqid("_", true)))
 				->addPrice(new MoneyPrice("money", 4000))
 				->addReward(new ItemReward(VanillaItems::EXPERIENCE_BOTTLE()->setCount(64))),
-		] as $entry) $this->shop->unshift($entry);
+		] as $entry) $this->shop->push($entry);
 
 		ShopManager::getInstance()->register($this->shop);
 	}
