@@ -226,6 +226,7 @@ class Game extends SubPluginBase implements Listener{
 				default => $this->getWorld()->getPlayers(),
 			};
 
+			if(empty($players)) return;
 			$randomKeys = array_rand($players, (int) ceil(count($players) / 2));
 			foreach(is_array($randomKeys) ? $randomKeys : [$randomKeys] as $key){
 				$random = $players[$key];
