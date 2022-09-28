@@ -435,6 +435,6 @@ class Game extends SubPluginBase implements Listener{
 		$player = $event->getPlayer();
 		if($player->isCreative() || is_null(TeamReferee::getTeam($player)) || $player->getWorld() !== $this->getWorld()) return;
 
-		$player->attack(new EntityDamageEvent($player, EntityDamageEvent::CAUSE_SUICIDE, 2 ** 32 - 1));
+		$player->attack(new EntityDamageEvent($player, EntityDamageCause::CHANGE_KIT, 2 ** 32 - 1));
 	}
 }
