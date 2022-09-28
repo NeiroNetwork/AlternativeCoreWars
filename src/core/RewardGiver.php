@@ -57,7 +57,7 @@ class RewardGiver extends SubPluginBase implements Listener{
 			$bool = $victor === $team;
 			$this->giveRewards($player,
 				$bool ? 5000 : 2000,
-				$bool ? 300 : 0,
+				$bool ? 300 : 100,
 				new LabelSet(["reason" => $bool ? "victory the game" : "defeat the game"])
 			);
 		}
