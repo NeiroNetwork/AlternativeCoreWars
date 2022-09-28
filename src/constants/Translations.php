@@ -55,4 +55,12 @@ final class Translations{
 	public static function REWARDS_EARN_MONEY(int $amount) : Translatable{
 		return new Translatable("rewards.earn.money", ["amount" => $amount]);
 	}
+
+	public static function REWARDS_EARN_NP(int $amount) : Translatable{
+		return new Translatable("rewards.earn.np", ["amount" => $amount]);
+	}
+
+	public static function REWARDS_EARN_MN(int $money, int $np) : Translatable{
+		return new Translatable("rewards.earn.mn", ["money" => $money, "np" => $np]);
+	}
 }
