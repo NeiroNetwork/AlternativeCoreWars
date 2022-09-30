@@ -6,11 +6,13 @@ namespace NeiroNetwork\AlternativeCoreWars\core;
 
 use NeiroNetwork\AlternativeCoreWars\core\subs\CoreWarsShop;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
+use NeiroNetwork\Shop\Customer;
 use NeiroNetwork\Shop\entry\price\MoneyPrice;
 use NeiroNetwork\Shop\entry\reward\ItemReward;
 use NeiroNetwork\Shop\entry\RewardEntry;
 use NeiroNetwork\Shop\ShopManager;
 use NeiroNetwork\Shop\utils\CapitalUtil;
+use NeiroNetwork\ShopForm\MenuFormHandlers;
 use NeiroNetwork\ShopForm\Utils;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
@@ -27,8 +29,10 @@ class ShopCreator extends SubPluginBase{
 
 		$this->getServer()->getCommandMap()->register($this->getName(), new class("shop", $this->shop) extends Command{
 			public function __construct(string $name, private CoreWarsShop $shop){ parent::__construct($name); }
-			public function execute(CommandSender $sender, string $commandLabel, array $args){
-				if($sender instanceof Player && TeamReferee::getTeam($sender) !== null) Utils::sendMenuForm($this->shop, $sender);
+			public function execute(CommandSender $sender, string $comandLabel, array $args){
+				$labelText = ""; //ショップに表示する文章
+				$colorCode = "§e"; //値段のカラーコード
+				if($sender instanceof Player && TeamReferee::getTeam($sender) !== null) Utils::sendMenuForm($this->shop, $sender, Customer::player($sender), $labelText, MenuFormHandlers::createPriceDisplayHandler($colorCode));
 			}
 		});
 	}
