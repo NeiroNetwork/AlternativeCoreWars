@@ -21,7 +21,6 @@ class CombatAdjustment extends SubPluginBase implements Listener{
 	public function onEntityDamageByChildEntity(EntityDamageByChildEntityEvent $event) : void{
 		$child = $event->getChild();
 		if($child instanceof Arrow){
-			$event->setBaseDamage($event->getBaseDamage() / 2);
 			$child->setPunchKnockback($child->getPunchKnockback() / 2);
 		}
 	}

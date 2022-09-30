@@ -62,7 +62,6 @@
 ### CombatAdjustment
 戦闘における仕様調整を担う。
 #### 弓矢
-- ダメージ 1/2
 - パンチ(エンチャント)の効果 1/2
 
 ### GameArenaProtector
