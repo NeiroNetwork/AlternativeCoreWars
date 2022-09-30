@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace NeiroNetwork\AlternativeCoreWars\core\subs;
 
-use NeiroNetwork\Shop\shop\BaseShop;
+use NeiroNetwork\Shop\Shop;
 
-class CoreWarsShop extends BaseShop{
+class CoreWarsShop extends Shop{
 
 	public function getDisplayName() : string{
 		return "ショップ";
