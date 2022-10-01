@@ -7,6 +7,7 @@ namespace NeiroNetwork\AlternativeCoreWars;
 use NeiroNetwork\AlternativeCoreWars\core\BlockReformSystem;
 use NeiroNetwork\AlternativeCoreWars\core\ChatRouter;
 use NeiroNetwork\AlternativeCoreWars\core\CombatAdjustment;
+use NeiroNetwork\AlternativeCoreWars\core\DropItemReplacer;
 use NeiroNetwork\AlternativeCoreWars\core\InvisibilityCancellation;
 use NeiroNetwork\AlternativeCoreWars\core\EnderChestsPerWorld;
 use NeiroNetwork\AlternativeCoreWars\core\Game;
@@ -66,6 +67,7 @@ class Main extends PluginBase{
 			ChatRouter::class,
 			RewardGiver::class,
 			ShopCreator::class,
+			DropItemReplacer::class,
 		]);
 	}
 
