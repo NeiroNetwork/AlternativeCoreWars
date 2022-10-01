@@ -12,10 +12,12 @@ use pocketmine\console\ConsoleCommandSender;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\Server;
+use pocketmine\utils\TextFormat;
 
 class ChatRouter extends SubPluginBase implements Listener{
 
-	private ConsoleCommandSender $console;
+	private const TAG_ALL = TextFormat::RED . "[ALL]" . TextFormat::RESET;
+	private const TAG_TEAM = TextFormat::GOLD . "[TEAM]" . TextFormat::RESET;
 
 	protected function onEnable() : void{
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
@@ -28,7 +30,6 @@ class ChatRouter extends SubPluginBase implements Listener{
 	}
 
 	public function onChat(PlayerChatEvent $event) : void{
-		//TODO: チームチャットと全体チャットの表示分け
 		$player = $event->getPlayer();
 
 		$team = TeamReferee::getTeam($player);
@@ -37,10 +38,13 @@ class ChatRouter extends SubPluginBase implements Listener{
 
 			if(str_starts_with($event->getMessage(), "!")){
 				$message = substr($message, 1);
+				$message = self::TAG_ALL . " " . $message;
 				$event->setMessage($message);
 			}else{
+				$message = self::TAG_TEAM . " " . $message;
 				$recipients = $this->getServer()->getBroadcastChannelSubscribers(BroadcastChannels::fromTeam($team));
 				$event->setRecipients($recipients);
+				$event->setMessage($message);
 			}
 		}
 	}
