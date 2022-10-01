@@ -30,9 +30,9 @@ class ShopCreator extends SubPluginBase{
 		$this->getServer()->getCommandMap()->register($this->getName(), new class("shop", $this->shop) extends Command{
 			public function __construct(string $name, private CoreWarsShop $shop){ parent::__construct($name); }
 			public function execute(CommandSender $sender, string $comandLabel, array $args){
-				$labelText = ""; //ショップに表示する文章
-				$colorCode = "§e"; //値段のカラーコード
-				if($sender instanceof Player && TeamReferee::getTeam($sender) !== null) Utils::sendMenuForm($this->shop, $sender, Customer::player($sender), $labelText, MenuFormHandlers::createPriceDisplayHandler($colorCode));
+				if($sender instanceof Player && TeamReferee::getTeam($sender) !== null){
+					Utils::sendMenuForm($this->shop, $sender, Customer::player($sender), "", MenuFormHandlers::createPriceDisplayHandler("§e"));
+				}
 			}
 		});
 	}
