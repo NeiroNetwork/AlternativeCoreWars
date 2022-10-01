@@ -180,6 +180,23 @@ class Game extends SubPluginBase implements Listener{
 			(new PhaseStartEvent($this))->call();
 		}
 
+		if($this->phase > 4 && $this->time % 15 === 14){
+			foreach($this->nexus as $team => $health){
+				if($health <= 1) continue;
+
+				$ev = new NexusDamageEvent($this, $team, 1);
+				$ev->call();
+
+				if(!$ev->isCancelled()) $this->nexus[$team] -= $ev->getDamage();
+			}
+
+			$aliveTeams = array_filter($this->nexus, fn(int $health) => $health > 0);
+			if(count($aliveTeams) <= 1){
+				Broadcast::sound("random.explode", recipients: $this->getWorld()->getPlayers());
+				$this->postGame(count($aliveTeams) === 1 ? array_key_first($aliveTeams) : null);
+			}
+		}
+
 		if($this->phase + 1 < count(self::GAME_TIME_TABLE) && $this->time++ >= self::GAME_TIME_TABLE[$this->phase]){
 			$this->phase++;
 			$this->time = 0;
