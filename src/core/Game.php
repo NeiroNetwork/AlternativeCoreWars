@@ -30,7 +30,6 @@ use NeiroNetwork\ExperimentalFeatures\feature\v1_2\entity\FireworksRocket;
 use NeiroNetwork\ExperimentalFeatures\feature\v1_2\item\FireworkColor;
 use NeiroNetwork\ExperimentalFeatures\feature\v1_2\item\Fireworks;
 use NeiroNetwork\ExperimentalFeatures\feature\v1_2\item\FireworkType;
-use NeiroNetwork\Kits\event\player\PlayerKitChangeEvent;
 use pocketmine\block\DiamondOre;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\entity\effect\EffectInstance;
@@ -445,12 +444,5 @@ class Game extends SubPluginBase implements Listener{
 		}elseif($from === $this->getWorld()){
 			$player->getNetworkSession()->sendDataPacket(BossEventPacket::hide($player->getId()));
 		}
-	}
-
-	public function onKitChange(PlayerKitChangeEvent $event) : void{
-		$player = $event->getPlayer();
-		if($player->isCreative() || is_null(TeamReferee::getTeam($player)) || $player->getWorld() !== $this->getWorld()) return;
-
-		(new EntityDamageEvent($player, EntityDamageCause::CHANGE_KIT, 2 ** 32 - 1))->call();
 	}
 }

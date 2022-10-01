@@ -11,6 +11,7 @@ use NeiroNetwork\AlternativeCoreWars\core\DropItemReplacer;
 use NeiroNetwork\AlternativeCoreWars\core\InvisibilityCancellation;
 use NeiroNetwork\AlternativeCoreWars\core\EnderChestsPerWorld;
 use NeiroNetwork\AlternativeCoreWars\core\Game;
+use NeiroNetwork\AlternativeCoreWars\core\KitEventBroker;
 use NeiroNetwork\AlternativeCoreWars\core\Lobby;
 use NeiroNetwork\AlternativeCoreWars\core\NoDeathScreenSystem;
 use NeiroNetwork\AlternativeCoreWars\core\PlayerBlockTracker;
@@ -68,6 +69,7 @@ class Main extends PluginBase{
 			RewardGiver::class,
 			ShopCreator::class,
 			DropItemReplacer::class,
+			KitEventBroker::class,
 		]);
 	}
 
