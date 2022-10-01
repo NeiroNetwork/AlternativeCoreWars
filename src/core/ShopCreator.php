@@ -38,7 +38,7 @@ class ShopCreator extends SubPluginBase{
 	}
 
 	private function registerShopEntries() : void{
-		foreach([
+		$this->shop->push(
 			(new RewardEntry("透明化のスプラッシュポーション", "不可視 2:15"))
 				->addPrice(new MoneyPrice("money", 3000))
 				->addReward(new ItemReward(VanillaItems::INVISIBILITY_SPLASH_POTION())),
@@ -63,7 +63,7 @@ class ShopCreator extends SubPluginBase{
 			(new RewardEntry("エンチャントのビン", "エンチャントのビン x 64"))
 				->addPrice(new MoneyPrice("money", 4000))
 				->addReward(new ItemReward(VanillaItems::EXPERIENCE_BOTTLE()->setCount(64))),
-		] as $entry) $this->shop->push($entry);
+		);
 
 		ShopManager::getInstance()->register($this->shop);
 	}
