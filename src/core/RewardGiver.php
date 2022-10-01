@@ -19,22 +19,27 @@ use SOFe\Capital\Schema\Complete;
 
 class RewardGiver extends SubPluginBase implements Listener{
 
-	private Complete $money, $np;
+	private Complete $money, $np, $exp;
 
 	private function giveRewards(
 		Player $player,
-		int $money = 0, int $np = 0,
+		int $money = 0, int $np = 0, int $exp = 0,
 		LabelSet $label = null
 	) : void{
 		$label ??= new LabelSet([]);
-		Capital::api("0.1.0", function(Capital $api) use ($player, $money, $np, $label){
+		Capital::api("0.1.0", function(Capital $api) use ($player, $money, $np, $exp, $label){
 			Broadcast::message(match(true){
+				$money !== 0 && $np !== 0 && $exp !== 0 => Translations::REWARDS_EARN_MNE($money, $np, $exp),
+				$np !== 0 && $exp !== 0 => Translations::REWARDS_EARN_NE($np, $exp),
+				$money !== 0 && $exp !== 0 => Translations::REWARDS_EARN_ME($money, $exp),
 				$money !== 0 && $np !== 0 => Translations::REWARDS_EARN_MN($money, $np),
+				$exp !== 0 => Translations::REWARDS_EARN_EXP($exp),
 				$money !== 0 => Translations::REWARDS_EARN_MONEY($money),
 				$np !== 0 => Translations::REWARDS_EARN_NP($np),
 			}, [$player]);
 			if($money !== 0) yield from $api->addMoney($this->getName(), $player, $this->money, $money, $label);
 			if($np !== 0) yield from $api->addMoney($this->getName(), $player, $this->np, $np, $label);
+			if($exp !== 0) yield from $api->addMoney($this->getName(), $player, $this->exp, $exp, $label);
 		});
 	}
 
@@ -45,6 +50,7 @@ class RewardGiver extends SubPluginBase implements Listener{
 			// TODO: selector をコンフィグファイルなどに移動する
 			$this->money = $api->completeConfig(["currency" => "money"]);
 			$this->np = $api->completeConfig(["currency" => "np"]);
+			$this->exp = $api->completeConfig(["currency" => "exp"]);
 		});
 	}
 
@@ -58,6 +64,7 @@ class RewardGiver extends SubPluginBase implements Listener{
 			$this->giveRewards($player,
 				$bool ? 5000 : 2000,
 				$bool ? 300 : 100,
+				$bool ? 2000 : 500,
 				new LabelSet(["reason" => $bool ? "victory the game" : "defeat the game"])
 			);
 		}
@@ -72,6 +79,7 @@ class RewardGiver extends SubPluginBase implements Listener{
 			$this->giveRewards($player,
 				$bool ? 100 : 10,
 				$bool ? 3 : 1,
+				$bool ? 100 : 30,
 				new LabelSet(["reason" => $bool ? "break the nexus" : "ally breaks the nexus"])
 			);
 		}
@@ -86,6 +94,7 @@ class RewardGiver extends SubPluginBase implements Listener{
 			$this->giveRewards($damager,
 				300,
 				6,
+				200,
 				new LabelSet(["reason" => "kill a player", "victim" => $player->getName()])
 			);
 		}
