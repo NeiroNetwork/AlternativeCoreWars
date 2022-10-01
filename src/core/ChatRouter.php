@@ -28,17 +28,29 @@ class ChatRouter extends SubPluginBase implements Listener{
 	}
 
 	public function onChat(PlayerChatEvent $event) : void{
-		return;	// TODO: 未完成
+		//TODO: 全体チャットかチームチャットかの識別(表示)
+		//TODO: できればrecipientsで統一したい
+		$player = $event->getPlayer();
 
-		$team = TeamReferee::getTeam($event->getPlayer());
+		$team = TeamReferee::getTeam($player);
 		if(!is_null($team)){
+			$message = $event->getMessage();
+
 			if(str_starts_with($event->getMessage(), "!")){
-				// TODO: どのように全体チャットとして表示するか…
-				$event->setMessage(substr($event->getMessage(), 1));
+				$message = substr($message, 1);
+				$event->cancel();
+				foreach($this->getServer()->getOnlinePlayers() as $p){
+					$t = TeamReferee::getTeam($p);
+					if(!is_null($t)){
+						$p->sendMessage("<" . $player->getDisplayName() . "> " . $message);
+					}
+				}
+			}else{
+				$recipients = $this->getServer()->getBroadcastChannelSubscribers(BroadcastChannels::fromTeam($team));
+				$event->setRecipients($recipients);
 			}
-			$recipients = $this->getServer()->getBroadcastChannelSubscribers(BroadcastChannels::fromTeam($team));
-			$recipients[] = $this->console;
-			$event->setRecipients($recipients);
+
+			Server::getInstance()->getLogger()->info("<" . $player->getDisplayName() . "> " . $event->getMessage()); //TODO: きれいにしたい(?)
 		}
 	}
 }
