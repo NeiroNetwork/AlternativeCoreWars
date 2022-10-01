@@ -19,13 +19,32 @@ use SOFe\Capital\Schema\Complete;
 
 class RewardGiver extends SubPluginBase implements Listener{
 
-	private Complete $money;
+	private Complete $money, $np;
+
+	private function giveRewards(
+		Player $player,
+		int $money = 0, int $np = 0,
+		LabelSet $label = null
+	) : void{
+		$label ??= new LabelSet([]);
+		Capital::api("0.1.0", function(Capital $api) use ($player, $money, $np, $label){
+			Broadcast::message(match(true){
+				$money !== 0 && $np !== 0 => Translations::REWARDS_EARN_MN($money, $np),
+				$money !== 0 => Translations::REWARDS_EARN_MONEY($money),
+				$np !== 0 => Translations::REWARDS_EARN_NP($np),
+			}, [$player]);
+			if($money !== 0) yield from $api->addMoney($this->getName(), $player, $this->money, $money, $label);
+			if($np !== 0) yield from $api->addMoney($this->getName(), $player, $this->np, $np, $label);
+		});
+	}
 
 	protected function onEnable() : void{
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 
 		Capital::api("0.1.0", function(Capital $api){
+			// TODO: selector をコンフィグファイルなどに移動する
 			$this->money = $api->completeConfig(["currency" => "money"]);
+			$this->np = $api->completeConfig(["currency" => "np"]);
 		});
 	}
 
@@ -36,10 +55,11 @@ class RewardGiver extends SubPluginBase implements Listener{
 			if(null === $team = TeamReferee::getTeam($player)) continue;
 
 			$bool = $victor === $team;
-			Capital::api("0.1.0", function(Capital $api) use ($player, $bool){
-				Broadcast::message(Translations::REWARDS_EARN_MONEY($amount = $bool ? 5000 : 2000), [$player]);
-				yield from $api->addMoney($this->getName(), $player, $this->money, $amount, new LabelSet(["reason" => $bool ? "win the game" : "lose the game"]));
-			});
+			$this->giveRewards($player,
+				$bool ? 5000 : 2000,
+				$bool ? 300 : 100,
+				new LabelSet(["reason" => $bool ? "victory the game" : "defeat the game"])
+			);
 		}
 	}
 
@@ -49,22 +69,25 @@ class RewardGiver extends SubPluginBase implements Listener{
 		$players = TeamReferee::getTeams(TeamReferee::getTeam($damager));
 		foreach($players as $player){
 			$bool = $damager === $player;
-			Capital::api("0.1.0", function(Capital $api) use ($player, $bool){
-				Broadcast::message(Translations::REWARDS_EARN_MONEY($amount = $bool ? 100 : 10), [$player]);
-				yield from $api->addMoney($this->getName(), $player, $this->money, $amount, new LabelSet(["reason" => $bool ? "break the nexus" : "ally breaks the nexus"]));
-			});
+			$this->giveRewards($player,
+				$bool ? 100 : 10,
+				$bool ? 3 : 1,
+				new LabelSet(["reason" => $bool ? "break the nexus" : "ally breaks the nexus"])
+			);
 		}
 	}
 
 	public function onPlayerDeath(PlayerDeathEvent $event) : void{
-		$damage = $event->getPlayer()->getLastDamageCause();
+		$player = $event->getPlayer();
+		$damage = $player->getLastDamageCause();
 		if($damage instanceof EntityDamageByEntityEvent && $damage->getDamager() instanceof Player){
 			/** @var Player $damager */
 			$damager = $damage->getDamager();
-			Capital::api("0.1.0", function(Capital $api) use ($damager){
-				Broadcast::message(Translations::REWARDS_EARN_MONEY(300), [$damager]);
-				yield from $api->addMoney($this->getName(), $damager, $this->money, 300, new LabelSet(["reason" => "kill a player"]));
-			});
+			$this->giveRewards($damager,
+				300,
+				6,
+				new LabelSet(["reason" => "kill a player", "victim" => $player->getName()])
+			);
 		}
 	}
 }
