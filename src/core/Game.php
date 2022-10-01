@@ -251,10 +251,7 @@ class Game extends SubPluginBase implements Listener{
 	public function onPlayerQuit(PlayerQuitEvent $event) : void{
 		$player = $event->getPlayer();
 		if($player->getWorld() === $this->getWorld() && $player->isSurvival()){
-			foreach($player->getDrops() as $item){
-				$player->getWorld()->dropItem($player->getLocation(), $item);
-			}
-			(new EntityDamageEvent($player, EntityDamageCause::GAME_QUIT, 0))->call();
+			(new EntityDamageEvent($player, EntityDamageCause::GAME_QUIT, 2 ** 32 - 1))->call();
 		}
 	}
 
