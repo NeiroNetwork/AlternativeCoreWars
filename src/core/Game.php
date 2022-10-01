@@ -52,7 +52,6 @@ use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\utils\TextFormat;
 use pocketmine\world\Position;
-use pocketmine\world\sound\ExplodeSound;
 use pocketmine\world\World;
 
 class Game extends SubPluginBase implements Listener{
@@ -408,7 +407,7 @@ class Game extends SubPluginBase implements Listener{
 		// ブロックは設置させたいので postGame() より後に実行する
 		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(
 			fn() => $position->getWorld()->setBlock($position, $isTeamDied ? VanillaBlocks::BEDROCK() : $block, false)
-		), $isTeamDied ? 1 : 6);
+		), $isTeamDied ? 1 : 5);
 	}
 
 	public function onEntityTeleport(EntityTeleportEvent $event) : void{
