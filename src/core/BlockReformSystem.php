@@ -8,14 +8,11 @@ use NeiroNetwork\AlternativeCoreWars\constants\ProtectionType;
 use NeiroNetwork\AlternativeCoreWars\core\subs\BlockReformOption;
 use NeiroNetwork\AlternativeCoreWars\event\GameCleanupEvent;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
-use NeiroNetwork\ExperimentalFeatures\feature\v1_17\RawIron;
 use pocketmine\block\BlockLegacyIds;
 use pocketmine\block\BlockLegacyMetadata;
 use pocketmine\data\bedrock\LegacyBlockIdToStringIdMap;
-use pocketmine\data\bedrock\LegacyItemIdToStringIdMap;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
-use pocketmine\item\VanillaItems;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\world\particle\MobSpawnParticle;
 use pocketmine\world\sound\PopSound;
@@ -73,8 +70,6 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 			$player = $event->getPlayer();
 			foreach($event->getDrops() as $dropItem){
 				if(!$dropItem->isNull()){
-					$rawIron = new RawIron();
-					if(LegacyItemIdToStringIdMap::getInstance()->legacyToString($dropItem->getId()) === $rawIron->fullStringId()) $dropItem = VanillaItems::IRON_INGOT(); //ドロップアイテムが鉄の原石だった場合、鉄インゴットに変換
 					$entity = $player->getWorld()->dropItem($position->add(0.5, 0.5, 0.5), $dropItem, delay: 0);
 					$entity->onCollideWithPlayer($player);
 				}
