@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace NeiroNetwork\AlternativeCoreWars\core;
 
 use NeiroNetwork\AlternativeCoreWars\constants\BroadcastChannels;
+use NeiroNetwork\AlternativeCoreWars\constants\Teams;
+use NeiroNetwork\AlternativeCoreWars\event\GameCleanupEvent;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use pocketmine\console\ConsoleCommandSender;
 use pocketmine\event\Listener;
@@ -17,19 +19,16 @@ class ChatRouter extends SubPluginBase implements Listener{
 
 	protected function onEnable() : void{
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
+		$this->initChatRouter();
+	}
 
-		$admins = $this->getServer()->getBroadcastChannelSubscribers(Server::BROADCAST_CHANNEL_ADMINISTRATIVE);
-		foreach($admins as $admin){
-			if($admin instanceof ConsoleCommandSender){
-				$this->console = $admin;
-				break;
-			}
-		}
+	private function initChatRouter(){
+		$this->getServer()->subscribeToBroadcastChannel(BroadcastChannels::fromTeam(Teams::RED), new ConsoleCommandSender(Server::getInstance(), Server::getInstance()->getLanguage()));
+		$this->getServer()->subscribeToBroadcastChannel(BroadcastChannels::fromTeam(Teams::BLUE), new ConsoleCommandSender(Server::getInstance(), Server::getInstance()->getLanguage()));
 	}
 
 	public function onChat(PlayerChatEvent $event) : void{
-		//TODO: 全体チャットかチームチャットかの識別(表示)
-		//TODO: できればrecipientsで統一したい
+		//TODO: チームチャットと全体チャットの表示分け
 		$player = $event->getPlayer();
 
 		$team = TeamReferee::getTeam($player);
@@ -38,19 +37,15 @@ class ChatRouter extends SubPluginBase implements Listener{
 
 			if(str_starts_with($event->getMessage(), "!")){
 				$message = substr($message, 1);
-				$event->cancel();
-				foreach($this->getServer()->getOnlinePlayers() as $p){
-					$t = TeamReferee::getTeam($p);
-					if(!is_null($t)){
-						$p->sendMessage("<" . $player->getDisplayName() . "> " . $message);
-					}
-				}
+				$event->setMessage($message);
 			}else{
 				$recipients = $this->getServer()->getBroadcastChannelSubscribers(BroadcastChannels::fromTeam($team));
 				$event->setRecipients($recipients);
 			}
-
-			Server::getInstance()->getLogger()->info("<" . $player->getDisplayName() . "> " . $event->getMessage()); //TODO: きれいにしたい(?)
 		}
+	}
+
+	public function onEndGame(GameCleanupEvent $event){
+		$this->initChatRouter();
 	}
 }
