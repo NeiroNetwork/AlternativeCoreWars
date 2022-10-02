@@ -111,14 +111,13 @@ class Game extends SubPluginBase implements Listener{
 		$this->spawnInGame($player);
 	}
 
-	private function spawnInGame(Player $player, Position $position = null) : void{
+	private function spawnInGame(Player $player) : void{
 		PlayerUtils::resetAllStates($player);
 
 		$team = TeamReferee::getTeam($player);
 		$player->setNameTag(Teams::textColor($team) . $player->getName() . TextFormat::RESET);
 		$player->setDisplayName(Teams::textColor($team) . $player->getName() . TextFormat::RESET);
-		$spawns = $this->getArena()->getSpawn($team);
-		$player->teleport($position ?? reset($spawns));
+		$player->teleport($this->getArena()->getSpawn($team));
 
 		if(class_exists("\NeiroNetwork\Kits\Main")){
 			$table = \NeiroNetwork\Kits\Main::getData()->getTableByPlayer($player);
