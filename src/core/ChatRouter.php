@@ -9,36 +9,57 @@ use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use pocketmine\console\ConsoleCommandSender;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerChatEvent;
-use pocketmine\Server;
+use pocketmine\utils\TextFormat;
 
 class ChatRouter extends SubPluginBase implements Listener{
 
-	private ConsoleCommandSender $console;
+	private const FLAG_NORMAL = 0x00;
+	private const FLAG_ALL = 0x01;
+
+	private array $chatFlag = [];
 
 	protected function onEnable() : void{
-		$this->getServer()->getPluginManager()->registerEvents($this, $this);
+		// FIXME: ConsoleCommandSender を新しく作っていいのか分からない (コンソールは1つなのに) (挙動的には問題ない)
+		$console = new ConsoleCommandSender($this->getServer(), $this->getServer()->getLanguage());
+		$this->getServer()->subscribeToBroadcastChannel(BroadcastChannels::RED, $console);
+		$this->getServer()->subscribeToBroadcastChannel(BroadcastChannels::BLUE, $console);
 
-		$admins = $this->getServer()->getBroadcastChannelSubscribers(Server::BROADCAST_CHANNEL_ADMINISTRATIVE);
-		foreach($admins as $admin){
-			if($admin instanceof ConsoleCommandSender){
-				$this->console = $admin;
-				break;
-			}
+		$this->getServer()->getPluginManager()->registerEvents($this, $this);
+	}
+
+	/**
+	 * @priority LOWEST
+	 */
+	public function onChat1(PlayerChatEvent $event) : void{
+		$message = $event->getMessage();
+		if(str_starts_with($message, "!")){
+			$this->chatFlag[spl_object_id($event)] = self::FLAG_ALL;
+			$event->setMessage(substr($message, 1));
+		}else{
+			$this->chatFlag[spl_object_id($event)] = self::FLAG_NORMAL;
 		}
 	}
 
-	public function onChat(PlayerChatEvent $event) : void{
-		return;	// TODO: 未完成
+	public function onChat2(PlayerChatEvent $event) : void{
+		if(!Game::getInstance()->isRunning() || is_null($team = TeamReferee::getTeam($event->getPlayer()))) return;
 
-		$team = TeamReferee::getTeam($event->getPlayer());
-		if(!is_null($team)){
-			if(str_starts_with($event->getMessage(), "!")){
-				// TODO: どのように全体チャットとして表示するか…
-				$event->setMessage(substr($event->getMessage(), 1));
-			}
-			$recipients = $this->getServer()->getBroadcastChannelSubscribers(BroadcastChannels::fromTeam($team));
-			$recipients[] = $this->console;
-			$event->setRecipients($recipients);
+		$message = $event->getMessage();
+		switch($this->chatFlag[spl_object_id($event)]){
+			case self::FLAG_NORMAL:
+				$event->setMessage(TextFormat::GRAY . $message);
+				$event->setRecipients($this->getServer()->getBroadcastChannelSubscribers(BroadcastChannels::fromTeam($team)));
+				break;
+			case self::FLAG_ALL:
+				// NOOP
+				break;
 		}
+	}
+
+	/**
+	 * @handleCancelled
+	 * @priority MONITOR
+	 */
+	public function onChat3(PlayerChatEvent $event) : void{
+		unset($this->chatFlag[spl_object_id($event)]);
 	}
 }
