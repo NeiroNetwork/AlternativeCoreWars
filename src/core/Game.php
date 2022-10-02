@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace NeiroNetwork\AlternativeCoreWars\core;
 
-use dktapps\pmforms\MenuForm;
-use dktapps\pmforms\MenuOption;
 use NeiroNetwork\AlternativeCoreWars\constants\BroadcastChannels;
 use NeiroNetwork\AlternativeCoreWars\constants\EntityDamageCause;
 use NeiroNetwork\AlternativeCoreWars\constants\Teams;
@@ -19,7 +17,6 @@ use NeiroNetwork\AlternativeCoreWars\event\GameStartEvent;
 use NeiroNetwork\AlternativeCoreWars\event\NexusDamageEvent;
 use NeiroNetwork\AlternativeCoreWars\event\PhaseStartEvent;
 use NeiroNetwork\AlternativeCoreWars\event\PlayerDeathWithoutDeathScreenEvent;
-use NeiroNetwork\AlternativeCoreWars\Main;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use NeiroNetwork\AlternativeCoreWars\utils\Broadcast;
 use NeiroNetwork\AlternativeCoreWars\utils\PlayerUtils;
@@ -120,7 +117,7 @@ class Game extends SubPluginBase implements Listener{
 		$team = TeamReferee::getTeam($player);
 		$player->setNameTag(Teams::textColor($team) . $player->getName() . TextFormat::RESET);
 		$player->setDisplayName(Teams::textColor($team) . $player->getName() . TextFormat::RESET);
-		$spawns = $this->getArena()->getSpawns($team);
+		$spawns = $this->getArena()->getSpawn($team);
 		$player->teleport($position ?? reset($spawns));
 
 		if(class_exists("\NeiroNetwork\Kits\Main")){
@@ -306,35 +303,9 @@ class Game extends SubPluginBase implements Listener{
 			$this->getScheduler()->scheduleDelayedTask(new ClosureTask(fn() => $player->isOnline() && $player->teleport($pos)), 4);
 		}
 
-		$isRespawned = false;
-		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use ($player, &$isRespawned) : void{
-			if(!$player->isOnline() || is_null($team = TeamReferee::getTeam($player))) return;
-			$spawns = Game::getInstance()->getArena()->getSpawns($team);
-			$player->sendForm(new MenuForm(
-				Main::getTranslator()->translate(Translations::FORM_RESPAWN_TITLE(), $player),
-				Main::getTranslator()->translate(Translations::FORM_RESPAWN_CONTENT(), $player),
-				array_map(fn($key) => new MenuOption((string) $key), array_keys($spawns)),	// FIXME: スポーン地点配列のキーは文字列であることをArenaDataが保証するべき
-				function(Player $player, int $selectedOption) use ($spawns, &$isRespawned) : void{
-					$position = array_values($spawns)[$selectedOption];
-					if($position->isValid() && !$isRespawned){
-						$isRespawned = true;
-						$this->spawnInGame($player, $position);
-					}
-				},
-				function(Player $player) use (&$isRespawned) : void{
-					if(!$isRespawned){
-						$isRespawned = true;
-						$this->spawnInGame($player);
-					}
-				}
-			));
+		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use ($player){
+			if($player->isOnline()) $this->spawnInGame($player);
 		}), 10 * 20);
-		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use ($player, &$isRespawned) : void{
-			if($player->isOnline() && !$isRespawned){
-				$isRespawned = true;
-				$this->spawnInGame($player);
-			}
-		}), 25 * 20);
 	}
 
 	public function onExhaust(PlayerExhaustEvent $event) : void{
