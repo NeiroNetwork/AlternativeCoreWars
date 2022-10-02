@@ -36,8 +36,9 @@ class Lobby extends SubPluginBase implements Listener{
 	public static function teleportToLobby(Player $player) : void{
 		PlayerUtils::resetAllStates($player);
 
-		$position = $player->getServer()->getWorldManager()->getDefaultWorld()->getSpawnLocation();
-		$player->teleport(Position::fromObject($position->add(0.5, 0, 0.5), $position->getWorld()), 0, 0);
+		// TODO: 値のハードコードをやめる
+		$position = new Position(362.5, 175, 279.5, $player->getServer()->getWorldManager()->getDefaultWorld());
+		$player->teleport($position, 0, 0);
 
 		$player->getInventory()->addItem(
 			VanillaItems::COMPASS()->setCustomName("§bゲームに参加する"),
