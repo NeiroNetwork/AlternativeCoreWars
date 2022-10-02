@@ -47,4 +47,28 @@ final class Translations{
 	public static function REWARDS_EARN_MONEY(int $amount) : Translatable{
 		return new Translatable("rewards.earn.money", ["amount" => $amount]);
 	}
+
+	public static function REWARDS_EARN_NP(int $amount) : Translatable{
+		return new Translatable("rewards.earn.np", ["amount" => $amount]);
+	}
+
+	public static function REWARDS_EARN_EXP(int $amount) : Translatable{
+		return new Translatable("rewards.earn.exp", ["amount" => $amount]);
+	}
+
+	public static function REWARDS_EARN_MN(int $money, int $np) : Translatable{
+		return new Translatable("rewards.earn.mn", ["money" => $money, "np" => $np]);
+	}
+
+	public static function REWARDS_EARN_ME(int $money, int $exp) : Translatable{
+		return new Translatable("rewards.earn.me", ["money" => $money, "exp" => $exp]);
+	}
+
+	public static function REWARDS_EARN_NE(int $np, int $exp) : Translatable{
+		return new Translatable("rewards.earn.ne", ["np" => $np, "exp" => $exp]);
+	}
+
+	public static function REWARDS_EARN_MNE(int $money, int $np, int $exp) : Translatable{
+		return new Translatable("rewards.earn.mne", ["money" => $money, "np" => $np, "exp" => $exp]);
+	}
 }

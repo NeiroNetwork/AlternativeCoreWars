@@ -46,13 +46,21 @@ class ServerSpecificationNormalizer extends SubPluginBase implements Listener{
 	private function normalizeServerSettings() : void{
 		$group = $this->getServer()->getConfigGroup();
 
-		$group->setConfigString("auto-save", "off");
+		$group->setConfigInt("max-players", 200);
 		$group->setConfigString("gamemode", GameMode::ADVENTURE()->name());
 		$group->setConfigString("pvp", "on");
+		$group->setConfigString("level-type", "FLAT");
+		$group->setConfigBool("enable-query", false);
+		$group->setConfigString("auto-save", "off");
 
 		$propertyCache = (new \ReflectionClass($group))->getProperty("propertyCache");
 		$propertyCache->setAccessible(true);
 		$propertyCache->setValue($group, [
+			"settings.query-plugins" => false,
+			"memory.main-hard-limit" => 0,
+			"memory.async-worker-hard-limit" => 1024,
+			//"network.compression-level" => 2,
+			//"network.async-compression" => true,
 			"player.save-player-data" => false,
 			"auto-report.enabled" => false,
 			"anonymous-statistics.enabled" => false,
@@ -99,10 +107,14 @@ class ServerSpecificationNormalizer extends SubPluginBase implements Listener{
 	private function reduceCommandPermissions() : void{
 		$operator = PermissionManager::getInstance()->getPermission(DefaultPermissions::ROOT_OPERATOR);
 		$console = PermissionManager::getInstance()->getPermission(DefaultPermissions::ROOT_CONSOLE);
+		$user = PermissionManager::getInstance()->getPermission(DefaultPermissions::ROOT_USER);
 		$operator->removeChild(DefaultPermissionNames::COMMAND_OP_GIVE);
 		$console->addChild(DefaultPermissionNames::COMMAND_OP_GIVE, true);
 		$operator->removeChild(DefaultPermissionNames::COMMAND_DUMPMEMORY);
 		$console->addChild(DefaultPermissionNames::COMMAND_DUMPMEMORY, true);
+		$user->removeChild(DefaultPermissionNames::COMMAND_VERSION);
+		$operator->addChild(DefaultPermissionNames::COMMAND_VERSION, true);
+		$console->addChild(DefaultPermissionNames::COMMAND_VERSION, true);
 	}
 
 	private function overwriteBlocks() : void{

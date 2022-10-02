@@ -27,7 +27,6 @@ use NeiroNetwork\ExperimentalFeatures\feature\v1_2\entity\FireworksRocket;
 use NeiroNetwork\ExperimentalFeatures\feature\v1_2\item\FireworkColor;
 use NeiroNetwork\ExperimentalFeatures\feature\v1_2\item\Fireworks;
 use NeiroNetwork\ExperimentalFeatures\feature\v1_2\item\FireworkType;
-use NeiroNetwork\Kits\event\player\PlayerKitChangeEvent;
 use pocketmine\block\DiamondOre;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\entity\effect\EffectInstance;
@@ -177,6 +176,23 @@ class Game extends SubPluginBase implements Listener{
 			(new PhaseStartEvent($this))->call();
 		}
 
+		if($this->phase > 4 && $this->time % 15 === 14){
+			foreach($this->nexus as $team => $health){
+				if($health <= 1) continue;
+
+				$ev = new NexusDamageEvent($this, $team, 1);
+				$ev->call();
+
+				if(!$ev->isCancelled()) $this->nexus[$team] -= $ev->getDamage();
+			}
+
+			$aliveTeams = array_filter($this->nexus, fn(int $health) => $health > 0);
+			if(count($aliveTeams) <= 1){
+				Broadcast::sound("random.explode", recipients: $this->getWorld()->getPlayers());
+				$this->postGame(count($aliveTeams) === 1 ? array_key_first($aliveTeams) : null);
+			}
+		}
+
 		if($this->phase + 1 < count(self::GAME_TIME_TABLE) && $this->time++ >= self::GAME_TIME_TABLE[$this->phase]){
 			$this->phase++;
 			$this->time = 0;
@@ -248,7 +264,7 @@ class Game extends SubPluginBase implements Listener{
 	public function onPlayerQuit(PlayerQuitEvent $event) : void{
 		$player = $event->getPlayer();
 		if($player->getWorld() === $this->getWorld() && $player->isSurvival()){
-			$player->attack(new EntityDamageEvent($player, EntityDamageCause::GAME_QUIT, 2 ** 32 - 1));
+			(new EntityDamageEvent($player, EntityDamageCause::GAME_QUIT, 2 ** 32 - 1))->call();
 		}
 	}
 
@@ -378,7 +394,7 @@ class Game extends SubPluginBase implements Listener{
 		// ブロックは設置させたいので postGame() より後に実行する
 		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(
 			fn() => $position->getWorld()->setBlock($position, $isTeamDied ? VanillaBlocks::BEDROCK() : $block, false)
-		), $isTeamDied ? 1 : 6);
+		), $isTeamDied ? 1 : 5);
 	}
 
 	public function onEntityTeleport(EntityTeleportEvent $event) : void{
@@ -399,12 +415,5 @@ class Game extends SubPluginBase implements Listener{
 		}elseif($from === $this->getWorld()){
 			$player->getNetworkSession()->sendDataPacket(BossEventPacket::hide($player->getId()));
 		}
-	}
-
-	public function onKitChange(PlayerKitChangeEvent $event) : void{
-		$player = $event->getPlayer();
-		if($player->isCreative() || is_null(TeamReferee::getTeam($player)) || $player->getWorld() !== $this->getWorld()) return;
-
-		$player->attack(new EntityDamageEvent($player, EntityDamageCause::CHANGE_KIT, 2 ** 32 - 1));
 	}
 }
