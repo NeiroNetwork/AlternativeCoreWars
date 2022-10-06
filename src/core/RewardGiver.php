@@ -71,7 +71,7 @@ class RewardGiver extends SubPluginBase implements Listener{
 	}
 
 	public function onNexusDamage(NexusDamageEvent $event) : void{
-		if(null === $damager = $event->getDamager()) return;
+		if(null === ($damager = $event->getDamager()) || $event->isCancelled()) return;
 
 		$players = TeamReferee::getTeams(TeamReferee::getTeam($damager));
 		foreach($players as $player){
