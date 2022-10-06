@@ -15,8 +15,8 @@ class ArenaData{
 	private string $name;
 	/** @var string[] */
 	private array $authors;
-	/** @var Position[][] */
-	private array $spawns;
+	/** @var Position[] */
+	private array $spawn;
 	/** @var Position[] */
 	private array $nexus;
 	/** @var AxisAlignedBB[] */
@@ -31,20 +31,18 @@ class ArenaData{
 
 		$this->authors = array_map(fn(string $author) => $author, $data["authors"] ?? []);
 
-		foreach($data["spawns"] as $team => $spawns){
-			foreach($spawns as $name => $spawn){
-				$spawn["world"] = $world;
-				if(count($spawn) > 3){
-					if(count($spawn) < 6){
-						$spawn["yaw"] ??= 0.0;
-						$spawn["pitch"] ??= 0.0;
-					}
-					$spawn = new Location(...$spawn);
-				}else{
-					$spawn = new Position(...$spawn);
+		foreach($data["spawn"] as $team => $spawn){
+			$spawn["world"] = $world;
+			if(count($spawn) > 3){
+				if(count($spawn) < 6){
+					$spawn["yaw"] ??= 0.0;
+					$spawn["pitch"] ??= 0.0;
 				}
-				$this->spawns[$team][$name] = $spawn;
+				$spawn = new Location(...$spawn);
+			}else{
+				$spawn = new Position(...$spawn);
 			}
+			$this->spawn[$team] = $spawn;
 		}
 
 		foreach($data["nexus"] as $team => $nexus){
@@ -81,10 +79,10 @@ class ArenaData{
 	}
 
 	/**
-	 * @return Position[][]|Position[]
+	 * @return Position[]|Position
 	 */
-	public function getSpawns(string $team = null) : array{
-		return is_null($team) ? $this->spawns : $this->spawns[$team];
+	public function getSpawn(string $team = null) : array|Position{
+		return is_null($team) ? $this->spawn : $this->spawn[$team];
 	}
 
 	/**
