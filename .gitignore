@@ -3,8 +3,7 @@
 # IDEs
 .idea/
 nbproject/
-.vscode/**
-!.vscode/settings.json
+.vscode/
 
 # Windows
 Thumbs.db

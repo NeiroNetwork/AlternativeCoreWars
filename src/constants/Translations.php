@@ -44,6 +44,14 @@ final class Translations{
 		return new Translatable("message.phase_info.$phase");
 	}
 
+	public static function FORM_RESPAWN_TITLE() : Translatable{
+		return new Translatable("form.respawn.title");
+	}
+
+	public static function FORM_RESPAWN_CONTENT() : Translatable{
+		return new Translatable("form.respawn.content");
+	}
+
 	public static function REWARDS_EARN_MONEY(int $amount) : Translatable{
 		return new Translatable("rewards.earn.money", ["amount" => $amount]);
 	}

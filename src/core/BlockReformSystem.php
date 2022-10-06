@@ -34,7 +34,7 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 	 */
 	public function onBlockBreak(BlockBreakEvent $event) : void{
 		// (このイベントは)緩い保護でのイベント、あるいはキャンセルされていないイベントである
-		if($event->isCancelled() && !(isset($event->protectionType) && $event->protectionType === ProtectionType::LENIENT)) return;
+		if($event->isCancelled() && (!isset($event->protectionType) || $event->protectionType !== ProtectionType::LENIENT)) return;
 
 		if($event->getInstaBreak()) return;		// (このイベントは)クリエイティブでない
 
