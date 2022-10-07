@@ -57,7 +57,7 @@ class ShopCreator extends SubPluginBase{
 				->addReward(new ItemReward(VanillaItems::SWIFTNESS_SPLASH_POTION())),
 			(new RewardEntry("", "§l§d再生のスプラッシュポーション §f(1:30)"))
 				->addPrice(new MoneyPrice("money", 3000))
-				->addReward(new ItemReward(VanillaItems::REGENERATION_SPLASH_POTION())),
+				->addReward(new ItemReward(VanillaItems::STRONG_REGENERATION_SPLASH_POTION())),
 			(new RewardEntry("", "§l§9暗視のスプラッシュポーション §f(6:00)"))
 				->addPrice(new MoneyPrice("money", 500))
 				->addReward(new ItemReward(VanillaItems::LONG_NIGHT_VISION_SPLASH_POTION())),
