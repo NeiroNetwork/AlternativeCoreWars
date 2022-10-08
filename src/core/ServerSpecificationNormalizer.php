@@ -49,7 +49,7 @@ class ServerSpecificationNormalizer extends SubPluginBase implements Listener{
 		//$group->setConfigInt("max-players", 200);
 		$group->setConfigString("gamemode", GameMode::ADVENTURE()->name());
 		$group->setConfigString("pvp", "on");
-		$group->setConfigString("level-type", "FLAT");
+		$group->setConfigString("level-type", "VOID");
 		$group->setConfigBool("enable-query", false);
 		$group->setConfigString("auto-save", "off");
 
@@ -57,8 +57,8 @@ class ServerSpecificationNormalizer extends SubPluginBase implements Listener{
 		$propertyCache->setAccessible(true);
 		$propertyCache->setValue($group, [
 			"settings.query-plugins" => false,
-			"memory.main-hard-limit" => 0,
-			"memory.async-worker-hard-limit" => 1024,
+			"memory.main-hard-limit" => 4096,
+			"memory.async-worker-hard-limit" => 256,
 			"network.compression-level" => 2,
 			"network.async-compression" => true,
 			"player.save-player-data" => false,
