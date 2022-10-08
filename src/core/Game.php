@@ -47,7 +47,6 @@ use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\utils\TextFormat;
-use pocketmine\world\Position;
 use pocketmine\world\World;
 
 class Game extends SubPluginBase implements Listener{
@@ -175,7 +174,7 @@ class Game extends SubPluginBase implements Listener{
 			(new PhaseStartEvent($this))->call();
 		}
 
-		if($this->phase > 4 && $this->time % 15 === 14){
+		if($this->phase >= 4 && $this->time % 15 === 14){
 			foreach($this->nexus as $team => $health){
 				if($health <= 1) continue;
 
