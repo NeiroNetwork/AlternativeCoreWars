@@ -38,7 +38,7 @@ class SoulboundItemMonitor extends SubPluginBase implements Listener{
 	/**
 	 * @priority MONITOR
 	 *
-	 * @/notHandler (temporary use)
+	 * @notHandler (temporary use)
 	 */
 	public function debugInventoryTransaction(InventoryTransactionEvent $event) : void{
 		$inventories = array_map(fn($v) => get_class($v), $event->getTransaction()->getInventories());
