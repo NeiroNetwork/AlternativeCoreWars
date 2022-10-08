@@ -31,7 +31,7 @@ use pocketmine\world\World;
 class Lobby extends SubPluginBase implements Listener{
 
 	private const VOTE_TIME = 40;	//120
-	private const MIN_PLAYER = 10;	//10
+	private const MIN_PLAYER = 1;	//10
 
 	public static function teleportToLobby(Player $player) : void{
 		PlayerUtils::resetAllStates($player);
