@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace NeiroNetwork\AlternativeCoreWars\core;
 
-use NeiroNetwork\AlternativeCoreWars\inventory\FakeDropItemAction;
-use NeiroNetwork\AlternativeCoreWars\inventory\FakeInventory;
-use NeiroNetwork\AlternativeCoreWars\inventory\FakeSlotChangeAction;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use NeiroNetwork\AlternativeCoreWars\utils\SoulboundItem;
 use pocketmine\entity\object\ItemEntity;
@@ -14,13 +11,15 @@ use pocketmine\event\entity\EntitySpawnEvent;
 use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerDeathEvent;
+use pocketmine\event\player\PlayerDropItemEvent;
 use pocketmine\inventory\ArmorInventory;
 use pocketmine\inventory\PlayerCraftingInventory;
 use pocketmine\inventory\PlayerCursorInventory;
 use pocketmine\inventory\PlayerInventory;
 use pocketmine\inventory\PlayerOffHandInventory;
-use pocketmine\inventory\transaction\action\DropItemAction;
+use pocketmine\inventory\SimpleInventory;
 use pocketmine\inventory\transaction\action\SlotChangeAction;
+use pocketmine\item\VanillaItems;
 
 class SoulboundItemMonitor extends SubPluginBase implements Listener{
 
@@ -39,7 +38,7 @@ class SoulboundItemMonitor extends SubPluginBase implements Listener{
 	/**
 	 * @priority MONITOR
 	 *
-	 * @notHandler (temporary use)
+	 * @/notHandler (temporary use)
 	 */
 	public function debugInventoryTransaction(InventoryTransactionEvent $event) : void{
 		$inventories = array_map(fn($v) => get_class($v), $event->getTransaction()->getInventories());
@@ -60,24 +59,16 @@ class SoulboundItemMonitor extends SubPluginBase implements Listener{
 	public function onInventoryTransaction(InventoryTransactionEvent $event) : void{
 		$transaction = $event->getTransaction();
 
-		// soulboundアイテムかどうかチェック & 偽のInventoryActionを作る
-		$soulboundItemFound = false;
-		$fakeActions = [];
+		// SlotChangeAction + soulboundアイテムかどうかチェック
+		$receiveAction = null;
 		foreach($transaction->getActions() as $action){
-			if(SoulboundItem::is($action->getTargetItem())){
-				$soulboundItemFound = true;
-				if($action instanceof SlotChangeAction){
-					$fakeActions[] = new FakeSlotChangeAction($action->getInventory(), $action->getSlot(), $action->getSourceItem(), $action->getTargetItem());
-				}elseif($action instanceof DropItemAction){
-					$fakeActions[] = new FakeDropItemAction($action->getTargetItem());
-					$transaction->addInventory(new FakeInventory());	// HACK
-				}
-			}else{
-				$fakeActions[] = $action;
+			if(SoulboundItem::is($action->getTargetItem()) && $action instanceof SlotChangeAction){
+				$receiveAction = $action;
+				break;
 			}
 		}
-		if(!$soulboundItemFound) return;
-		$this->getLogger()->debug("InventoryTransaction has soulbound item");
+		if($receiveAction === null) return;
+		$this->getLogger()->debug("InventoryTransaction has SlotChangeAction and soulbound item");
 
 		// 許可されていないインベントリが含まれているかチェック
 		$hasDeniedInventory = false;
@@ -88,20 +79,28 @@ class SoulboundItemMonitor extends SubPluginBase implements Listener{
 			}
 		}
 		if(!$hasDeniedInventory) return;
-		$this->getLogger()->debug("InventoryTransaction has not allowed inventory");
+		$this->getLogger()->debug("InventoryTransaction has disallowed inventory");
 
-		// トランザクションを改竄
-		$reflectedTransaction = new \ReflectionClass($transaction);
-		$property = $reflectedTransaction->getProperty("actions");
-		$property->setAccessible(true);
-		$property->setValue($transaction, $fakeActions);
+		// アイテムを受け取るインベントリから、虚無のインベントリに移動させるアクションを追加
+		$transaction->addAction(new SlotChangeAction(
+			$receiveAction->getInventory(),
+			$receiveAction->getSlot(),
+			$receiveAction->getTargetItem(),
+			VanillaItems::AIR()
+		));
+		$transaction->addAction(new SlotChangeAction(
+			new SimpleInventory(1),
+			0,
+			VanillaItems::AIR(),
+			$receiveAction->getTargetItem()
+		));
+	}
 
-		// 改竄したトランザクションの検証
-		$method = $reflectedTransaction->getMethod("shuffleActions");
-		$method->setAccessible(true);
-		$method->invoke($transaction);
-
-		$event->getTransaction()->validate();
+	/**
+	 * @priority HIGHEST
+	 */
+	public function onPlayerDropItem(PlayerDropItemEvent $event) : void{
+		if(SoulboundItem::is($item = $event->getItem())) $item->setCount(0);
 	}
 
 	/**
