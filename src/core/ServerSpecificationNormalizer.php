@@ -46,7 +46,7 @@ class ServerSpecificationNormalizer extends SubPluginBase implements Listener{
 	private function normalizeServerSettings() : void{
 		$group = $this->getServer()->getConfigGroup();
 
-		$group->setConfigInt("max-players", 200);
+		//$group->setConfigInt("max-players", 200);
 		$group->setConfigString("gamemode", GameMode::ADVENTURE()->name());
 		$group->setConfigString("pvp", "on");
 		$group->setConfigString("level-type", "FLAT");
@@ -59,8 +59,8 @@ class ServerSpecificationNormalizer extends SubPluginBase implements Listener{
 			"settings.query-plugins" => false,
 			"memory.main-hard-limit" => 0,
 			"memory.async-worker-hard-limit" => 1024,
-			//"network.compression-level" => 2,
-			//"network.async-compression" => true,
+			"network.compression-level" => 2,
+			"network.async-compression" => true,
 			"player.save-player-data" => false,
 			"auto-report.enabled" => false,
 			"anonymous-statistics.enabled" => false,
