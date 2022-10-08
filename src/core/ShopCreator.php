@@ -43,28 +43,28 @@ class ShopCreator extends SubPluginBase{
 	private function registerShopEntries() : void{
 		// FIXME: 本来はハンドラーで色付けしてほしいらしい (ただしアイテムごとに色を変えるのはまだ大変らしい？)
 		$this->shop->push(
-			(new RewardEntry("", "§l透明化のスプラッシュポーション §f(2:15)"))
+			(new RewardEntry("", "§f透明化のスプラッシュポーション §r(2:15)"))
 				->addPrice(new MoneyPrice("money", 3000))
 				->addReward(new ItemReward(VanillaItems::INVISIBILITY_SPLASH_POTION())),
-			(new RewardEntry("", "§l§6耐火のスプラッシュポーション §f(2:15)"))
+			(new RewardEntry("", "§6耐火のスプラッシュポーション §r(2:15)"))
 				->addPrice(new MoneyPrice("money", 1000))
 				->addReward(new ItemReward(VanillaItems::FIRE_RESISTANCE_SPLASH_POTION())),
-			(new RewardEntry("", "§l§c力のスプラッシュポーション §f(2:15)"))
+			(new RewardEntry("", "§c力のスプラッシュポーション §r(2:15)"))
 				->addPrice(new MoneyPrice("money", 2000))
 				->addReward(new ItemReward(VanillaItems::STRENGTH_SPLASH_POTION())),
-			(new RewardEntry("", "§l§b俊敏のスプラッシュポーション §f(2:15)"))
+			(new RewardEntry("", "§b俊敏のスプラッシュポーション §r(2:15)"))
 				->addPrice(new MoneyPrice("money", 1500))
 				->addReward(new ItemReward(VanillaItems::SWIFTNESS_SPLASH_POTION())),
-			(new RewardEntry("", "§l§d再生のスプラッシュポーション §f(1:30)"))
+			(new RewardEntry("", "§d再生のスプラッシュポーション §r(1:30)"))
 				->addPrice(new MoneyPrice("money", 3000))
 				->addReward(new ItemReward(VanillaItems::LONG_REGENERATION_SPLASH_POTION())),
-			(new RewardEntry("", "§l§9暗視のスプラッシュポーション §f(6:00)"))
+			(new RewardEntry("", "§9暗視のスプラッシュポーション §r(6:00)"))
 				->addPrice(new MoneyPrice("money", 500))
 				->addReward(new ItemReward(VanillaItems::LONG_NIGHT_VISION_SPLASH_POTION())),
-			(new RewardEntry("", "§l§2毒のスプラッシュポーション §f(0:33)"))
+			(new RewardEntry("", "§2毒のスプラッシュポーション §r(0:33)"))
 				->addPrice(new MoneyPrice("money", 2000))
 				->addReward(new ItemReward(VanillaItems::POISON_SPLASH_POTION())),
-			(new RewardEntry("", "§l§aエンチャントのビン §f(x64)"))
+			(new RewardEntry("", "§aエンチャントのビン §r(x64)"))
 				->addPrice(new MoneyPrice("money", 4000))
 				->addReward(new ItemReward(VanillaItems::EXPERIENCE_BOTTLE()->setCount(64))),
 		);
