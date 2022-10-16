@@ -27,7 +27,6 @@ use NeiroNetwork\ExperimentalFeatures\feature\v1_2\entity\FireworksRocket;
 use NeiroNetwork\ExperimentalFeatures\feature\v1_2\item\FireworkColor;
 use NeiroNetwork\ExperimentalFeatures\feature\v1_2\item\Fireworks;
 use NeiroNetwork\ExperimentalFeatures\feature\v1_2\item\FireworkType;
-use NeiroNetwork\Kits\event\player\PlayerSkillActivateEvent;
 use pocketmine\block\DiamondOre;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\entity\effect\EffectInstance;
@@ -414,12 +413,6 @@ class Game extends SubPluginBase implements Listener{
 			));
 		}elseif($from === $this->getWorld()){
 			$player->getNetworkSession()->sendDataPacket(BossEventPacket::hide($player->getId()));
-		}
-	}
-
-	public function onPlayerSkillActivate(PlayerSkillActivateEvent $event) : void{
-		if(!$this->isRunning()){
-			$event->cancel();
 		}
 	}
 }
