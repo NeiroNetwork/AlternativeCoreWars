@@ -96,6 +96,30 @@ class TeamReferee extends SubPluginBase implements Listener{
 		}
 	}
 
+	/**
+	 * プレイヤーが味方同士であるかをチェックします。
+	 * ロビーにいるプレイヤーは false になります。
+	 */
+	public static function isAlly(Player $player1, Player $player2) : bool{
+		$team1 = self::getTeam($player1);
+		$team2 = self::getTeam($player2);
+
+		if($team1 === null || $team2 === null) return false;
+		return $team1 === $team2;
+	}
+
+	/**
+	 * プレイヤーが敵同士であるかをチェックします。
+	 * ロビーにいるプレイヤーは false になります。
+	 */
+	public static function isEnemy(Player $player1, Player $player2) : bool{
+		$team1 = self::getTeam($player1);
+		$team2 = self::getTeam($player2);
+
+		if($team1 === null || $team2 === null) return false;
+		return $team1 !== $team2;
+	}
+
 	protected function onLoad() : void{
 		self::reset();
 	}
@@ -113,15 +137,14 @@ class TeamReferee extends SubPluginBase implements Listener{
 		$victim = $event->getEntity();
 		if(!$damager instanceof Player || !$victim instanceof Player) return;
 
-		$team1 = self::getTeam($damager);
-		$team2 = self::getTeam($victim);
-		if($team1 !== null && $team2 !== null && $team1 === $team2){
-			$event->cancel();
-			if($event instanceof EntityDamageByChildEntityEvent){
-				$child = $event->getChild();
-				if($child instanceof Arrow){
-					$child->setPunchKnockback(0.0);
-				}
+		if(!self::isAlly($damager, $victim)) return;
+
+		$event->cancel();
+
+		if($event instanceof EntityDamageByChildEntityEvent){
+			$child = $event->getChild();
+			if($child instanceof Arrow){
+				$child->setPunchKnockback(0.0);
 			}
 		}
 	}
