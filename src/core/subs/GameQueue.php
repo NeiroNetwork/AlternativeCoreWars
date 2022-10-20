@@ -34,6 +34,7 @@ class GameQueue implements \Iterator, \ArrayAccess, \Countable{
 		return current($this->players);
 	}
 
+	#[\ReturnTypeWillChange]
 	public function next() : Player|bool{
 		return next($this->players);
 	}
