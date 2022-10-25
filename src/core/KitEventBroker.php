@@ -7,6 +7,7 @@ namespace NeiroNetwork\AlternativeCoreWars\core;
 use NeiroNetwork\AlternativeCoreWars\constants\EntityDamageCause;
 use NeiroNetwork\AlternativeCoreWars\SubPluginBase;
 use NeiroNetwork\Kits\event\player\PlayerKitChangeEvent;
+use NeiroNetwork\Kits\event\player\PlayerSkillActivateEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Listener;
 
@@ -22,6 +23,12 @@ class KitEventBroker extends SubPluginBase implements Listener{
 		$player = $event->getPlayer();
 		if($player->isSurvival() && TeamReferee::getTeam($player) && $player->getWorld() === Game::getInstance()->getWorld()){
 			(new EntityDamageEvent($player, EntityDamageCause::CHANGE_KIT, 2 ** 32 - 1))->call();
+		}
+	}
+
+	public function onPlayerSkillActivate(PlayerSkillActivateEvent $event) : void{
+		if(!Game::getInstance()->isRunning()){
+			$event->cancel();
 		}
 	}
 }

@@ -122,6 +122,7 @@ class Game extends SubPluginBase implements Listener{
 			$table = \NeiroNetwork\Kits\Main::getData()->getTableByPlayer($player);
 			$table->setInventory();
 			$table->giveEffects();
+			$table->getKit()->setup($player);
 		}
 
 		foreach($player->getInventory()->getContents() as $index => $item){
