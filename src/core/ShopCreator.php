@@ -17,6 +17,7 @@ use NeiroNetwork\ShopForm\Utils;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\item\VanillaItems;
+use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use SOFe\InfoAPI\InfoAPI;
 use SOFe\InfoAPI\PlayerInfo;
@@ -32,7 +33,9 @@ class ShopCreator extends SubPluginBase{
 		$this->getServer()->getCommandMap()->register($this->getName(), new class("shop", $this->shop) extends Command{
 			public function __construct(string $name, private CoreWarsShop $shop){ parent::__construct($name, "ショップを表示します"); }
 			public function execute(CommandSender $sender, string $commandLabel, array $args){
-				if($sender instanceof Player && TeamReferee::getTeam($sender) !== null){
+				if(!$sender instanceof Player || $sender->getGamemode()->id() === GameMode::SPECTATOR()->id()) return;
+
+				if(TeamReferee::getTeam($sender) !== null){
 					$labelText = InfoAPI::resolve("購入するアイテムを選んでください (§a所持: {money} Money§r)", new PlayerInfo($sender));
 					Utils::sendMenuForm($this->shop, $sender, Customer::player($sender), $labelText, MenuFormHandlers::createPriceDisplayHandler("§e"));
 				}
