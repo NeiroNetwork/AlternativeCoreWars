@@ -33,12 +33,9 @@ class ShopCreator extends SubPluginBase{
 		$this->getServer()->getCommandMap()->register($this->getName(), new class("shop", $this->shop) extends Command{
 			public function __construct(string $name, private CoreWarsShop $shop){ parent::__construct($name, "ショップを表示します"); }
 			public function execute(CommandSender $sender, string $commandLabel, array $args){
-				if(!$sender instanceof Player || $sender->getGamemode()->id() === GameMode::SPECTATOR()->id()) return;
-
-				if(TeamReferee::getTeam($sender) !== null){
-					$labelText = InfoAPI::resolve("購入するアイテムを選んでください (§a所持: {money} Money§r)", new PlayerInfo($sender));
-					Utils::sendMenuForm($this->shop, $sender, Customer::player($sender), $labelText, MenuFormHandlers::createPriceDisplayHandler("§e"));
-				}
+				if(!$sender instanceof Player || $sender->getGamemode()->equals(GameMode::SPECTATOR()) || TeamReferee::getTeam($sender) === null) return;
+				$labelText = InfoAPI::resolve("購入するアイテムを選んでください (§a所持: {money} Money§r)", new PlayerInfo($sender));
+				Utils::sendMenuForm($this->shop, $sender, Customer::player($sender), $labelText, MenuFormHandlers::createPriceDisplayHandler("§e"));
 			}
 		});
 	}
