@@ -17,7 +17,7 @@ use NeiroNetwork\AlternativeCoreWars\core\NoDeathScreenSystem;
 use NeiroNetwork\AlternativeCoreWars\core\PlayerBlockTracker;
 use NeiroNetwork\AlternativeCoreWars\core\GameArenaProtector;
 use NeiroNetwork\AlternativeCoreWars\core\PlayerKillAssistsEventMaker;
-use NeiroNetwork\AlternativeCoreWars\core\PlayerStatsViewer;
+use NeiroNetwork\AlternativeCoreWars\core\CommandFactory;
 use NeiroNetwork\AlternativeCoreWars\core\PrivateCraftingForBrewingAndSmelting;
 use NeiroNetwork\AlternativeCoreWars\core\RewardGiver;
 use NeiroNetwork\AlternativeCoreWars\core\ServerSpecificationNormalizer;
@@ -71,7 +71,7 @@ class Main extends PluginBase{
 			ShopCreator::class,
 			DropItemReplacer::class,
 			KitEventBroker::class,
-			PlayerStatsViewer::class,
+			CommandFactory::class,
 		]);
 	}
 
