@@ -34,9 +34,11 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 		$block = $event->getBlock();
 		$stringId = LegacyBlockIdToStringIdMap::getInstance()->legacyToString($block->getId());
 		$stringId = str_replace("minecraft:", "", $stringId);
-		$option = $this->reformableBlocks[$stringId];
-		$xp = is_null($option->getXpClosure()) ? $event->getXpDropAmount() : $option->getXpClosure()();
-		$event->setXpDropAmount($xp);
+		if(isset($this->reformableBlocks[$stringId])){
+			$option = $this->reformableBlocks[$stringId];
+			$xp = is_null($option->getXpClosure()) ? $event->getXpDropAmount() : $option->getXpClosure()();
+			$event->setXpDropAmount($xp);
+		}
 	}
 
 	/**
