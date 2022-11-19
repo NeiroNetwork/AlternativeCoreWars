@@ -28,6 +28,18 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 	}
 
 	/**
+	 * @priority LOWEST
+	 */
+	public function changeXpDropAmount(BlockBreakEvent $event) : void{
+		$block = $event->getBlock();
+		$stringId = LegacyBlockIdToStringIdMap::getInstance()->legacyToString($block->getId());
+		$stringId = str_replace("minecraft:", "", $stringId);
+		$option = $this->reformableBlocks[$stringId];
+		$xp = is_null($option->getXpClosure()) ? $event->getXpDropAmount() : $option->getXpClosure()();
+		$event->setXpDropAmount($xp);
+	}
+
+	/**
 	 * @handleCancelled
 	 * @priority HIGHEST
 	 * FIXME: LOW → HIGH → HIGHEST に変えたが影響が分からない
@@ -75,7 +87,7 @@ class BlockReformSystem extends SubPluginBase implements Listener{
 				}
 			}
 			$event->setDrops([]);
-			$earnXp = is_null($option->getXpClosure()) ? $event->getXpDropAmount() : $option->getXpClosure()();
+			$earnXp = $event->getXpDropAmount();
 			if($earnXp > 0) $player->getXpManager()->onPickupXp($earnXp);
 			$event->setXpDropAmount(0);
 		}
