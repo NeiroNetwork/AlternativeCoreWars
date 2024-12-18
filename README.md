@@ -2,13 +2,15 @@
 代替 - 核 - 戦争
 
 ## イベント一覧
-| イベント             | 説明                |
-|------------------|-------------------|
-| GameCleanupEvent | ゲームの後片付けを行うイベント   |
-| GameSettleEvent  | ゲームが決着した時のイベント    |
-| GameStartEvent   | ゲームが始まった時のイベント    |
-| NexusDamageEvent | ネクサスが破壊されたときのイベント |
-| PhaseStartEvent  | フェーズが始まった時のイベント   |
+| イベント                               | 説明                                                  |
+|------------------------------------|-----------------------------------------------------|
+| GameCleanupEvent                   | ゲームの後片付けを行うイベント                                     |
+| GameSettleEvent                    | ゲームが決着した時のイベント                                      |
+| GameStartEvent                     | ゲームが始まった時のイベント                                      |
+| NexusDamageEvent                   | ネクサスが破壊されたときのイベント                                   |
+| PhaseStartEvent                    | フェーズが始まった時のイベント                                     |
+| PlayerAssistDeathEvent             | プレイヤーが他のプレイヤーの死をアシストした時のイベント                        |
+| PlayerDeathWithoutDeathScreenEvent | プレイヤーが死んだときのイベント<br/>(PlayerDeathEvent に変わって呼び出される) |
 
 ## 仕様
 ### ServerSpecificationNormalizer
